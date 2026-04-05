@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IPMS 新品商业成功平台{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+            background: #f5f6fa;
+            color: #333;
+            min-height: 100vh;
+        }
+        a { text-decoration: none; color: inherit; }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        }
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 32px;
+        }
+        .logo {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+        .header-nav {
+            display: flex;
+            gap: 4px;
+        }
+        .header-nav a {
+            color: rgba(255,255,255,0.8);
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .header-nav a:hover, .header-nav a.active {
+            color: #fff;
+            background: rgba(255,255,255,0.15);
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .user-menu {
+            position: relative;
+            cursor: pointer;
+        }
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            border: 2px solid rgba(255,255,255,0.4);
+            transition: all 0.2s;
+        }
+        .user-avatar:hover { background: rgba(255,255,255,0.35); }
+        .user-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 44px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+            min-width: 160px;
+            overflow: hidden;
+            z-index: 200;
+        }
+        .user-dropdown.show { display: block; }
+        .user-dropdown a {
+            display: block;
+            padding: 10px 16px;
+            font-size: 14px;
+            color: #333;
+            transition: background 0.15s;
+        }
+        .user-dropdown a:hover { background: #f5f6fa; }
+        .user-dropdown .divider {
+            height: 1px;
+            background: #eee;
+            margin: 4px 0;
+        }
+
+        /* Layout */
+        .layout {
+            display: flex;
+            padding-top: 56px;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: #fff;
+            border-right: 1px solid #e8e8e8;
+            position: fixed;
+            top: 56px;
+            left: 0;
+            bottom: 0;
+            overflow-y: auto;
+            z-index: 50;
+            transition: transform 0.3s;
+        }
+        .sidebar-section {
+            padding: 16px 0 8px;
+        }
+        .sidebar-section-title {
+            padding: 0 20px;
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 20px;
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.15s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar-item:hover {
+            background: #f8f7ff;
+            color: #667eea;
+        }
+        .sidebar-item.active {
+            background: #f0edff;
+            color: #667eea;
+            border-left-color: #667eea;
+            font-weight: 500;
+        }
+        .sidebar-item .icon {
+            width: 18px;
+            text-align: center;
+            font-size: 15px;
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 220px;
+            flex: 1;
+            padding: 24px;
+            min-height: calc(100vh - 56px);
+        }
+
+        /* Common card */
+        .card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .badge-purple { background: #f0edff; color: #667eea; }
+        .badge-green { background: #e6f9f0; color: #27ae60; }
+        .badge-orange { background: #fff5e6; color: #e67e22; }
+        .badge-red { background: #fde8e8; color: #e74c3c; }
+        .badge-blue { background: #e8f0fe; color: #2980b9; }
+
+        /* Button */
+        .btn {
+            padding: 8px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #555;
+        }
+        .btn-outline:hover { border-color: #667eea; color: #667eea; }
+
+        /* Progress bar */
+        .progress-bar {
+            height: 6px;
+            background: #eee;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.6s ease;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+            z-index: 500;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px;
+            width: 90%;
+            max-width: 520px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Form */
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        /* Mobile */
+        .mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+        }
+        @media (max-width: 768px) {
+            .mobile-toggle { display: block; }
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .header-nav { display: none; }
+        }
+
+        /* Scrollbar */
+        .sidebar::-webkit-scrollbar { width: 4px; }
+        .sidebar::-webkit-scrollbar-thumb { background: #ddd; border-radius: 2px; }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-left">
+            <button class="mobile-toggle" onclick="document.querySelector('.sidebar').classList.toggle('open')">&#9776;</button>
+            <a href="/dashboard" class="logo">
+                <span class="logo-icon">&#9830;</span>
+                IPMS 新品商业成功平台
+            </a>
+            <nav class="header-nav">
+                <a href="/dashboard" class="{% if active_nav == 'dashboard' %}active{% endif %}">工作台</a>
+                <a href="/pipeline" class="{% if active_nav == 'pipeline' %}active{% endif %}">项目管线</a>
+                <a href="/knowledge" class="{% if active_nav == 'knowledge' %}active{% endif %}">知识库</a>
+            </nav>
+        </div>
+        <div class="header-right">
+            <div class="user-menu" onclick="this.querySelector('.user-dropdown').classList.toggle('show')">
+                <div class="user-avatar">{{ current_user.username[0] if current_user else 'A' }}</div>
+                <div class="user-dropdown">
+                    <a href="#">个人中心</a>
+                    <a href="#">账号设置</a>
+                    <div class="divider"></div>
+                    <a href="#" onclick="logout()">退出登录</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">工作台</div>
+                <a href="/dashboard" class="sidebar-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <span class="icon">&#127968;</span> 首页概览
+                </a>
+                <a href="/dashboard" class="sidebar-item {% if active_page == 'datapanel' %}active{% endif %}">
+                    <span class="icon">&#128202;</span> 数据看板
+                </a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">阶段管理</div>
+                <a href="/insights" class="sidebar-item {% if active_page == 'insights' %}active{% endif %}">
+                    <span class="icon">&#128269;</span> 市场洞察
+                </a>
+                <a href="/pipeline" class="sidebar-item {% if active_page == 'concept' %}active{% endif %}">
+                    <span class="icon">&#128161;</span> 概念验证
+                </a>
+                <a href="/business-case" class="sidebar-item {% if active_page == 'business_case' %}active{% endif %}">
+                    <span class="icon">&#128200;</span> 商业论证
+                </a>
+                <a href="/pipeline" class="sidebar-item {% if active_page == 'launch_prep' %}active{% endif %}">
+                    <span class="icon">&#128230;</span> 上市准备
+                </a>
+                <a href="/pipeline" class="sidebar-item {% if active_page == 'launch_exec' %}active{% endif %}">
+                    <span class="icon">&#128640;</span> 发布执行
+                </a>
+                <a href="/pipeline" class="sidebar-item {% if active_page == 'review' %}active{% endif %}">
+                    <span class="icon">&#128736;</span> 复盘优化
+                </a>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">平台能力</div>
+                <a href="/pipeline" class="sidebar-item {% if active_page == 'gate_review' %}active{% endif %}">
+                    <span class="icon">&#9989;</span> 阶段门径评审
+                </a>
+                <a href="/knowledge" class="sidebar-item {% if active_page == 'knowledge' %}active{% endif %}">
+                    <span class="icon">&#128218;</span> 知识库
+                </a>
+                <a href="#" class="sidebar-item {% if active_page == 'plm' %}active{% endif %}">
+                    <span class="icon">&#128279;</span> PLM协同
+                </a>
+                <a href="#" class="sidebar-item {% if active_page == 'settings' %}active{% endif %}">
+                    <span class="icon">&#9881;</span> 系统设置
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-menu')) {
+                document.querySelectorAll('.user-dropdown').forEach(d => d.classList.remove('show'));
+            }
+            if (!e.target.closest('.sidebar') && !e.target.closest('.mobile-toggle')) {
+                document.querySelector('.sidebar').classList.remove('open');
+            }
+        });
+
+        function logout() {
+            fetch('/api/logout', { method: 'POST' })
+                .then(() => { window.location.href = '/login'; })
+                .catch(() => { window.location.href = '/login'; });
+        }
+
+        {% block extra_js %}{% endblock %}
+    </script>
+</body>
+</html>

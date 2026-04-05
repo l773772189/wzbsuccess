@@ -1,0 +1,570 @@
+{% extends "base.html" %}
+{% block title %}项目详情 - IPMS{% endblock %}
+
+{% block extra_css %}
+.breadcrumb {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 20px;
+}
+.breadcrumb a { color: #667eea; }
+.breadcrumb a:hover { text-decoration: underline; }
+
+/* Project header */
+.project-header {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+.project-header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+.project-header h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.project-meta {
+    display: flex;
+    gap: 24px;
+    font-size: 13px;
+    color: #777;
+    margin-bottom: 12px;
+}
+.project-meta span { display: flex; align-items: center; gap: 4px; }
+.project-header-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.project-header-progress .progress-bar { flex: 1; height: 8px; }
+.project-header-progress .pct { font-size: 14px; font-weight: 600; color: #667eea; min-width: 40px; }
+
+/* Tabs */
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 24px;
+    gap: 0;
+}
+.tab {
+    padding: 12px 24px;
+    font-size: 14px;
+    color: #777;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: inherit;
+}
+.tab:hover { color: #667eea; }
+.tab.active { color: #667eea; border-bottom-color: #667eea; font-weight: 600; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* Stage Gate timeline */
+.gate-timeline {
+    display: flex;
+    gap: 0;
+    position: relative;
+    padding: 20px 0;
+    overflow-x: auto;
+}
+.gate-stage {
+    flex: 1;
+    min-width: 140px;
+    text-align: center;
+    position: relative;
+}
+.gate-stage::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: #e8e8e8;
+    z-index: 0;
+}
+.gate-stage:first-child::before { left: 50%; }
+.gate-stage:last-child::before { right: 50%; }
+.gate-circle {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+    font-size: 18px;
+    position: relative;
+    z-index: 1;
+    transition: transform 0.2s;
+}
+.gate-circle:hover { transform: scale(1.1); }
+.gate-stage.completed .gate-circle {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: #fff;
+}
+.gate-stage.active .gate-circle {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(102,126,234,0.2);
+}
+.gate-stage.pending .gate-circle {
+    background: #f0f0f0;
+    color: #bbb;
+}
+.gate-label { font-size: 13px; font-weight: 500; color: #555; margin-bottom: 4px; }
+.gate-info { font-size: 11px; color: #aaa; }
+.gate-score { font-size: 12px; color: #667eea; font-weight: 600; margin-top: 4px; }
+
+/* Insights list */
+.insight-item {
+    padding: 16px;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+}
+.insight-item:hover { border-color: #d0d0ff; }
+.insight-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+.insight-header h4 { font-size: 15px; color: #333; }
+.insight-content { font-size: 13px; color: #666; line-height: 1.6; }
+.insight-footer { margin-top: 8px; font-size: 12px; color: #aaa; }
+
+/* Business case financials */
+.finance-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.finance-card {
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fc;
+    border-radius: 10px;
+}
+.finance-card .label { font-size: 12px; color: #888; margin-bottom: 6px; }
+.finance-card .value { font-size: 24px; font-weight: 700; color: #333; }
+.finance-card .value.highlight { color: #667eea; }
+
+/* Activity timeline */
+.activity-item {
+    padding: 14px 0 14px 24px;
+    border-left: 2px solid #e8e8e8;
+    position: relative;
+}
+.activity-item::before {
+    content: '';
+    position: absolute;
+    left: -5px; top: 18px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #667eea;
+}
+.activity-item .desc { font-size: 14px; color: #333; }
+.activity-item .time { font-size: 12px; color: #aaa; margin-top: 4px; }
+
+@media (max-width: 768px) {
+    .finance-grid { grid-template-columns: repeat(2, 1fr); }
+    .gate-timeline { overflow-x: auto; }
+    .project-meta { flex-wrap: wrap; gap: 12px; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="/dashboard">首页</a> &gt; <a href="/pipeline">项目管线</a> &gt; <span id="breadcrumbName">加载中...</span>
+</div>
+
+<!-- Project Header -->
+<div class="project-header" id="projectHeader">
+    <div class="project-header-top">
+        <h1>
+            <span id="projectName">--</span>
+            <span class="badge badge-purple" id="projectStatus">--</span>
+        </h1>
+        <button class="btn btn-primary" onclick="location.reload()">&#8635; 刷新</button>
+    </div>
+    <div class="project-meta">
+        <span>&#128197; 类别: <strong id="projectCategory">--</strong></span>
+        <span>&#128100; 负责人: <strong id="projectOwner">--</strong></span>
+        <span>&#128197; 开始: <span id="projectStart">--</span></span>
+        <span>&#128197; 目标: <span id="projectEnd">--</span></span>
+    </div>
+    <div class="project-header-progress">
+        <div class="progress-bar"><div class="progress-fill" id="projectProgress" style="width:0%"></div></div>
+        <div class="pct" id="projectPct">0%</div>
+    </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+    <button class="tab active" onclick="switchTab('gate')">阶段门径</button>
+    <button class="tab" onclick="switchTab('insights')">市场洞察</button>
+    <button class="tab" onclick="switchTab('bizcase')">商业论证</button>
+    <button class="tab" onclick="switchTab('plan')">上市计划</button>
+    <button class="tab" onclick="switchTab('activity')">动态记录</button>
+</div>
+
+<!-- Tab: Stage Gate -->
+<div class="tab-panel active" id="panel-gate">
+    <div class="card">
+        <div class="card-title">Stage-Gate 阶段状态</div>
+        <div class="gate-timeline" id="gateTimeline">
+            <div style="color:#aaa;text-align:center;width:100%;padding:20px;">加载中...</div>
+        </div>
+    </div>
+    <div class="card" id="gateDetails" style="display:none;">
+        <div class="card-title">阶段详情</div>
+        <div id="gateDetailContent"></div>
+    </div>
+</div>
+
+<!-- Tab: Market Insights -->
+<div class="tab-panel" id="panel-insights">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <h3 style="font-size:16px;">市场洞察列表</h3>
+        <button class="btn btn-primary" onclick="openInsightModal()">+ 新增洞察</button>
+    </div>
+    <div id="insightsList">
+        <div style="color:#aaa;text-align:center;padding:40px;">加载中...</div>
+    </div>
+</div>
+
+<!-- Tab: Business Case -->
+<div class="tab-panel" id="panel-bizcase">
+    <div class="finance-grid" id="financeGrid">
+        <div class="finance-card">
+            <div class="label">投资金额</div>
+            <div class="value" id="bcInvestment">--</div>
+        </div>
+        <div class="finance-card">
+            <div class="label">预期收入</div>
+            <div class="value highlight" id="bcRevenue">--</div>
+        </div>
+        <div class="finance-card">
+            <div class="label">投资回报率</div>
+            <div class="value highlight" id="bcROI">--</div>
+        </div>
+        <div class="finance-card">
+            <div class="label">回收期</div>
+            <div class="value" id="bcPayback">--</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">商业论证详情</div>
+        <div id="bcDetails" style="font-size:14px;color:#555;line-height:1.8;">加载中...</div>
+        <div style="margin-top:16px;">
+            <button class="btn btn-primary" onclick="openBizCaseEditModal()">编辑商业论证</button>
+        </div>
+    </div>
+</div>
+
+<!-- Tab: Launch Plan -->
+<div class="tab-panel" id="panel-plan">
+    <div class="card">
+        <div class="card-title">上市计划</div>
+        <div id="launchPlanContent" style="color:#aaa;text-align:center;padding:40px;">该模块正在建设中...</div>
+    </div>
+</div>
+
+<!-- Tab: Activities -->
+<div class="tab-panel" id="panel-activity">
+    <div class="card">
+        <div class="card-title">动态记录</div>
+        <div id="activityList">
+            <div style="color:#aaa;text-align:center;padding:40px;">加载中...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Insight Modal -->
+<div class="modal-overlay" id="insightModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeInsightModal()" style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">&times;</button>
+        <div class="modal-title">新增市场洞察</div>
+        <form onsubmit="submitInsight(event)">
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" id="insightTitle" required placeholder="洞察标题">
+            </div>
+            <div class="form-group">
+                <label>类型</label>
+                <select id="insightType">
+                    <option value="趋势分析">趋势分析</option>
+                    <option value="消费者研究">消费者研究</option>
+                    <option value="竞品分析">竞品分析</option>
+                    <option value="需求洞察">需求洞察</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>内容</label>
+                <textarea id="insightContent" required placeholder="详细描述市场洞察..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>数据来源</label>
+                <input type="text" id="insightSource" placeholder="如: 尼尔森报告、内部调研等">
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="closeInsightModal()">取消</button>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- BizCase Edit Modal -->
+<div class="modal-overlay" id="bizCaseModal">
+    <div class="modal">
+        <button onclick="closeBizCaseModal()" style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">&times;</button>
+        <div class="modal-title">编辑商业论证</div>
+        <form onsubmit="submitBizCase(event)">
+            <div class="form-group">
+                <label>投资金额 (万元)</label>
+                <input type="number" id="editInvestment" required>
+            </div>
+            <div class="form-group">
+                <label>预期收入 (万元)</label>
+                <input type="number" id="editRevenue" required>
+            </div>
+            <div class="form-group">
+                <label>投资回报率 (%)</label>
+                <input type="number" id="editROI" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label>回收期 (月)</label>
+                <input type="number" id="editPayback" required>
+            </div>
+            <div class="form-group">
+                <label>风险等级</label>
+                <select id="editRisk">
+                    <option value="低">低</option>
+                    <option value="中">中</option>
+                    <option value="高">高</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>结论与建议</label>
+                <textarea id="editConclusion" rows="4"></textarea>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="closeBizCaseModal()">取消</button>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const PROJECT_ID = '{{ project_id }}';
+const STAGE_NAMES = ['市场洞察', '概念验证', '商业论证', '上市准备', '发布执行', '复盘优化'];
+
+// Tab switching
+function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    event.target.classList.add('active');
+    document.getElementById('panel-' + name).classList.add('active');
+}
+
+// Load project info
+fetch('/api/projects/' + PROJECT_ID)
+    .then(r => r.json())
+    .then(p => {
+        document.getElementById('breadcrumbName').textContent = p.name || '项目';
+        document.getElementById('projectName').textContent = p.name || '--';
+        document.getElementById('projectCategory').textContent = p.category || '新品';
+        document.getElementById('projectOwner').textContent = p.owner || '未指定';
+        document.getElementById('projectStart').textContent = p.start_date || '--';
+        document.getElementById('projectEnd').textContent = p.target_launch_date || '--';
+        document.getElementById('projectProgress').style.width = (p.progress || 0) + '%';
+        document.getElementById('projectPct').textContent = (p.progress || 0) + '%';
+        const statusBadge = document.getElementById('projectStatus');
+        statusBadge.textContent = p.status || p.current_stage || '进行中';
+        if (p.status === '已完成') statusBadge.className = 'badge badge-green';
+        else if (p.status === '已暂停') statusBadge.className = 'badge badge-orange';
+        else statusBadge.className = 'badge badge-purple';
+    })
+    .catch(() => {
+        document.getElementById('breadcrumbName').textContent = '项目详情';
+    });
+
+// Load stages
+fetch('/api/projects/' + PROJECT_ID + '/stages')
+    .then(r => r.json())
+    .then(data => {
+        const stages = data.stages || data || [];
+        renderGateTimeline(stages);
+    })
+    .catch(() => renderGateTimeline([]));
+
+function renderGateTimeline(stages) {
+    const el = document.getElementById('gateTimeline');
+    const stageMap = {};
+    stages.forEach(s => { stageMap[s.stage_name || s.name] = s; });
+
+    el.innerHTML = STAGE_NAMES.map((name, i) => {
+        const s = stageMap[name] || {};
+        let cls = 'pending';
+        let icon = (i + 1);
+        if (s.status === 'completed' || s.status === '已完成') { cls = 'completed'; icon = '&#10003;'; }
+        else if (s.status === 'active' || s.status === '进行中') { cls = 'active'; }
+        const score = s.score ? `<div class="gate-score">评分: ${s.score}</div>` : '';
+        const reviewer = s.reviewer ? `<div class="gate-info">评审: ${s.reviewer}</div>` : '';
+        return `<div class="gate-stage ${cls}" onclick="showGateDetail('${name}', ${JSON.stringify(s).replace(/"/g, '&quot;')})">
+            <div class="gate-circle">${icon}</div>
+            <div class="gate-label">${name}</div>
+            ${reviewer}
+            ${score}
+        </div>`;
+    }).join('');
+}
+
+function showGateDetail(name, data) {
+    const el = document.getElementById('gateDetails');
+    el.style.display = 'block';
+    document.getElementById('gateDetailContent').innerHTML = `
+        <p><strong>阶段:</strong> ${name}</p>
+        <p><strong>状态:</strong> ${data.status || '待启动'}</p>
+        <p><strong>评审人:</strong> ${data.reviewer || '未指定'}</p>
+        <p><strong>评分:</strong> ${data.score || '未评分'}</p>
+        <p><strong>备注:</strong> ${data.comments || data.comment || '无'}</p>
+    `;
+}
+
+// Load insights
+fetch('/api/projects/' + PROJECT_ID + '/insights')
+    .then(r => r.json())
+    .then(data => {
+        const items = data.insights || data || [];
+        renderInsights(items);
+    })
+    .catch(() => renderInsights([]));
+
+function renderInsights(items) {
+    const el = document.getElementById('insightsList');
+    if (!items.length) {
+        el.innerHTML = '<div style="color:#aaa;text-align:center;padding:40px;">暂无市场洞察数据</div>';
+        return;
+    }
+    el.innerHTML = items.map(i => `
+        <div class="insight-item">
+            <div class="insight-header">
+                <h4>${i.title || ''}</h4>
+                <span class="badge badge-blue">${i.insight_type || i.type || '洞察'}</span>
+            </div>
+            <div class="insight-content">${i.content || ''}</div>
+            <div class="insight-footer">来源: ${i.source || '内部'} &middot; ${i.created_at || ''}</div>
+        </div>
+    `).join('');
+}
+
+// Load business case
+fetch('/api/projects/' + PROJECT_ID + '/business-case')
+    .then(r => r.json())
+    .then(data => {
+        const bc = data.business_case || data || {};
+        document.getElementById('bcInvestment').textContent = (bc.investment_amount || '--') + ' 万';
+        document.getElementById('bcRevenue').textContent = (bc.expected_revenue || '--') + ' 万';
+        document.getElementById('bcROI').textContent = (bc.roi || '--') + '%';
+        document.getElementById('bcPayback').textContent = (bc.payback_period || '--') + ' 月';
+        let detailHTML = '';
+        if (bc.risk_level) detailHTML += `<p><strong>风险等级:</strong> <span class="badge ${bc.risk_level === '高' ? 'badge-red' : bc.risk_level === '中' ? 'badge-orange' : 'badge-green'}">${bc.risk_level}</span></p>`;
+        if (bc.conclusion) detailHTML += `<p style="margin-top:12px;"><strong>结论与建议:</strong></p><p>${bc.conclusion}</p>`;
+        document.getElementById('bcDetails').innerHTML = detailHTML || '暂无详细信息';
+        // Pre-fill edit form
+        document.getElementById('editInvestment').value = bc.investment_amount || '';
+        document.getElementById('editRevenue').value = bc.expected_revenue || '';
+        document.getElementById('editROI').value = bc.roi || '';
+        document.getElementById('editPayback').value = bc.payback_period || '';
+        document.getElementById('editConclusion').value = bc.conclusion || '';
+    })
+    .catch(() => {
+        document.getElementById('bcDetails').innerHTML = '暂无商业论证数据';
+    });
+
+// Load activities
+fetch('/api/activities?project_id=' + PROJECT_ID)
+    .then(r => r.json())
+    .then(data => {
+        const items = data.activities || data || [];
+        renderActivities(items);
+    })
+    .catch(() => renderActivities([]));
+
+function renderActivities(items) {
+    const el = document.getElementById('activityList');
+    if (!items.length) {
+        el.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px;">暂无动态记录</div>';
+        return;
+    }
+    el.innerHTML = items.map(a => `
+        <div class="activity-item">
+            <div class="desc">${a.description || a.content || ''}</div>
+            <div class="time">${a.created_at || a.time || ''}</div>
+        </div>
+    `).join('');
+}
+
+// Modals
+function openInsightModal() { document.getElementById('insightModal').classList.add('show'); }
+function closeInsightModal() { document.getElementById('insightModal').classList.remove('show'); }
+function openBizCaseEditModal() { document.getElementById('bizCaseModal').classList.add('show'); }
+function closeBizCaseModal() { document.getElementById('bizCaseModal').classList.remove('show'); }
+
+function submitInsight(e) {
+    e.preventDefault();
+    fetch('/api/projects/' + PROJECT_ID + '/insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            title: document.getElementById('insightTitle').value,
+            insight_type: document.getElementById('insightType').value,
+            content: document.getElementById('insightContent').value,
+            source: document.getElementById('insightSource').value,
+            project_id: PROJECT_ID
+        })
+    }).then(r => r.json())
+      .then(() => { closeInsightModal(); location.reload(); })
+      .catch(err => alert('保存失败: ' + err.message));
+}
+
+function submitBizCase(e) {
+    e.preventDefault();
+    fetch('/api/projects/' + PROJECT_ID + '/business-case', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            investment_amount: parseFloat(document.getElementById('editInvestment').value),
+            expected_revenue: parseFloat(document.getElementById('editRevenue').value),
+            roi: parseFloat(document.getElementById('editROI').value),
+            payback_period: parseInt(document.getElementById('editPayback').value),
+            risk_level: document.getElementById('editRisk').value,
+            conclusion: document.getElementById('editConclusion').value
+        })
+    }).then(r => r.json())
+      .then(() => { closeBizCaseModal(); location.reload(); })
+      .catch(err => alert('保存失败: ' + err.message));
+}
+</script>
+{% endblock %}

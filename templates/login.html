@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - IPMS 新品商业成功平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", sans-serif;
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Left branding */
+        .login-brand {
+            flex: 1;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-brand::before {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            top: -100px;
+            left: -100px;
+        }
+        .login-brand::after {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            bottom: -80px;
+            right: -80px;
+        }
+        .brand-content {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            margin: 0 auto 24px;
+            backdrop-filter: blur(10px);
+        }
+        .brand-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+        .brand-subtitle {
+            font-size: 16px;
+            opacity: 0.85;
+            margin-bottom: 40px;
+        }
+        .brand-badges {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+        }
+        .brand-badge {
+            padding: 10px 28px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 24px;
+            font-size: 15px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Right form */
+        .login-form-side {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: #f8f9fc;
+        }
+        .login-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+        }
+        .login-card h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .login-card .hint {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 28px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.2s;
+            background: #fafbfc;
+        }
+        .form-group input:focus, .form-group select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            background: #fff;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            margin-top: 8px;
+        }
+        .login-btn:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(102,126,234,0.3);
+        }
+        .login-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .error-msg {
+            color: #e74c3c;
+            font-size: 13px;
+            margin-top: 12px;
+            display: none;
+            text-align: center;
+        }
+        .default-creds {
+            margin-top: 16px;
+            padding: 12px;
+            background: #f8f7ff;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #888;
+            text-align: center;
+        }
+        .default-creds strong { color: #667eea; }
+        .divider {
+            text-align: center;
+            margin: 24px 0;
+            position: relative;
+            color: #bbb;
+            font-size: 13px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 38%;
+            height: 1px;
+            background: #e8e8e8;
+        }
+        .divider::before { left: 0; }
+        .divider::after { right: 0; }
+        .third-party {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .third-party-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #e8e8e8;
+            border-radius: 10px;
+            background: #fff;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+            color: #666;
+            text-align: center;
+        }
+        .third-party-btn:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: #f8f7ff;
+        }
+
+        @media (max-width: 768px) {
+            body { flex-direction: column; }
+            .login-brand {
+                padding: 40px 20px;
+                min-height: auto;
+            }
+            .brand-title { font-size: 24px; }
+            .login-form-side { padding: 24px; }
+            .login-card { padding: 28px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-brand">
+        <div class="brand-content">
+            <div class="brand-logo">&#9830;</div>
+            <h1 class="brand-title">母婴数字化平台</h1>
+            <p class="brand-subtitle">新品商业成功全流程管理</p>
+            <div class="brand-badges">
+                <span class="brand-badge">PLM 产品全生命周期</span>
+                <span class="brand-badge">IPMS 新品商业成功</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="login-form-side">
+        <div class="login-card">
+            <h2>欢迎登录</h2>
+            <p class="hint">请输入您的账号信息</p>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>用户名</label>
+                    <input type="text" id="username" placeholder="请输入用户名" value="admin" required>
+                </div>
+                <div class="form-group">
+                    <label>密码</label>
+                    <input type="password" id="password" placeholder="请输入密码" value="admin123" required>
+                </div>
+                <div class="form-group">
+                    <label>平台选择</label>
+                    <select id="platform">
+                        <option value="all">全部</option>
+                        <option value="ipms" selected>IPMS 新品商业成功</option>
+                        <option value="plm">PLM 产品生命周期</option>
+                    </select>
+                </div>
+                <button type="submit" class="login-btn" id="loginBtn">登 录</button>
+                <div class="error-msg" id="errorMsg"></div>
+            </form>
+
+            <div class="default-creds">
+                默认账号: <strong>admin</strong> / <strong>admin123</strong>
+            </div>
+
+            <div class="divider">第三方登录</div>
+            <div class="third-party">
+                <button class="third-party-btn" onclick="alert('企业微信登录功能开发中')">企业微信</button>
+                <button class="third-party-btn" onclick="alert('钉钉登录功能开发中')">钉钉</button>
+                <button class="third-party-btn" onclick="alert('SSO登录功能开发中')">SSO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMsg');
+            btn.disabled = true;
+            btn.textContent = '登录中...';
+            errorMsg.style.display = 'none';
+
+            try {
+                const resp = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: document.getElementById('username').value,
+                        password: document.getElementById('password').value,
+                        platform: document.getElementById('platform').value
+                    })
+                });
+                const data = await resp.json();
+                if (resp.ok && data.token) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user || {}));
+                    window.location.href = '/dashboard';
+                } else {
+                    errorMsg.textContent = data.message || '登录失败，请检查账号密码';
+                    errorMsg.style.display = 'block';
+                }
+            } catch (err) {
+                errorMsg.textContent = '网络错误，请稍后重试';
+                errorMsg.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '登 录';
+            }
+        }
+    </script>
+</body>
+</html>

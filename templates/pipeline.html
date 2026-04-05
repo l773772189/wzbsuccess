@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}项目管线 - IPMS{% endblock %}
+
+{% block extra_css %}
+.pipeline-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.pipeline-header h2 { font-size: 20px; font-weight: 600; color: #333; }
+
+.kanban {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    min-height: 500px;
+    overflow-x: auto;
+}
+.kanban-col {
+    background: #f8f9fc;
+    border-radius: 12px;
+    padding: 12px;
+    min-width: 200px;
+}
+.kanban-col-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid;
+}
+.kanban-col:nth-child(1) .kanban-col-header { border-color: #667eea; }
+.kanban-col:nth-child(2) .kanban-col-header { border-color: #764ba2; }
+.kanban-col:nth-child(3) .kanban-col-header { border-color: #f39c12; }
+.kanban-col:nth-child(4) .kanban-col-header { border-color: #27ae60; }
+.kanban-col:nth-child(5) .kanban-col-header { border-color: #e74c3c; }
+.kanban-col:nth-child(6) .kanban-col-header { border-color: #2980b9; }
+.kanban-col-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+}
+.kanban-col-count {
+    background: #e8e8e8;
+    color: #666;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.kanban-card {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: all 0.2s;
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.kanban-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.kanban-card-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+.kanban-card-progress {
+    margin-bottom: 8px;
+}
+.kanban-card-progress .progress-bar { height: 5px; }
+.kanban-card-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #999;
+}
+.kanban-card-owner {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.kanban-card-days {
+    color: #aaa;
+}
+
+.empty-col {
+    text-align: center;
+    color: #ccc;
+    font-size: 13px;
+    padding: 24px 0;
+}
+
+@media (max-width: 1200px) {
+    .kanban {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+@media (max-width: 768px) {
+    .kanban {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 500px) {
+    .kanban {
+        grid-template-columns: 1fr;
+    }
+}
+{% endblock %}
+
+{% block content %}
+<div class="pipeline-header">
+    <h2>&#128202; 项目管线看板</h2>
+    <div style="display:flex;gap:8px;">
+        <button class="btn btn-outline" onclick="loadProjects()">&#8635; 刷新</button>
+    </div>
+</div>
+
+<div class="kanban" id="kanbanBoard">
+    <!-- Filled by JS -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const STAGES = ['市场洞察', '概念验证', '商业论证', '上市准备', '发布执行', '复盘优化'];
+
+function loadProjects() {
+    fetch('/api/projects')
+        .then(r => r.json())
+        .then(data => {
+            const projects = data.projects || data || [];
+            renderKanban(projects);
+        })
+        .catch(() => renderKanban([]));
+}
+
+function renderKanban(projects) {
+    const grouped = {};
+    STAGES.forEach(s => { grouped[s] = []; });
+    projects.forEach(p => {
+        const stage = p.current_stage || '市场洞察';
+        if (grouped[stage]) grouped[stage].push(p);
+        else grouped['市场洞察'].push(p);
+    });
+
+    const board = document.getElementById('kanbanBoard');
+    board.innerHTML = STAGES.map(stage => {
+        const items = grouped[stage];
+        const cards = items.length
+            ? items.map(p => `
+                <a href="/project/${p.id}" class="kanban-card">
+                    <div class="kanban-card-name">${p.name}</div>
+                    <div class="kanban-card-progress">
+                        <div class="progress-bar"><div class="progress-fill" style="width:${p.progress || 0}%"></div></div>
+                    </div>
+                    <div class="kanban-card-meta">
+                        <div class="kanban-card-owner">&#128100; ${p.owner || '未指定'}</div>
+                        <div class="kanban-card-days">${p.days_in_stage || '--'} 天</div>
+                    </div>
+                </a>
+            `).join('')
+            : '<div class="empty-col">暂无项目</div>';
+
+        return `<div class="kanban-col">
+            <div class="kanban-col-header">
+                <span class="kanban-col-title">${stage}</span>
+                <span class="kanban-col-count">${items.length}</span>
+            </div>
+            ${cards}
+        </div>`;
+    }).join('');
+}
+
+loadProjects();
+</script>
+{% endblock %}

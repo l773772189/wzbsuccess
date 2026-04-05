@@ -1,0 +1,368 @@
+{% extends "base.html" %}
+{% block title %}商业论证 - IPMS{% endblock %}
+
+{% block extra_css %}
+.bc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.bc-header h2 { font-size: 20px; font-weight: 600; }
+.bc-breadcrumb {
+    font-size: 13px;
+    color: #999;
+    margin-bottom: 16px;
+}
+.bc-breadcrumb a { color: #667eea; }
+.bc-breadcrumb a:hover { text-decoration: underline; }
+
+/* Financial dashboard */
+.finance-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.fc {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    transition: transform 0.2s;
+}
+.fc:hover { transform: translateY(-2px); }
+.fc .icon { font-size: 28px; margin-bottom: 8px; }
+.fc .label { font-size: 13px; color: #888; margin-bottom: 8px; }
+.fc .value { font-size: 28px; font-weight: 700; color: #333; }
+.fc .value.purple { color: #667eea; }
+.fc .value.green { color: #27ae60; }
+.fc .unit { font-size: 14px; font-weight: 400; color: #999; }
+
+/* Bar chart (CSS only) */
+.bar-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 24px;
+    height: 200px;
+    padding: 20px 0;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 16px;
+}
+.bar-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.bar-wrapper {
+    width: 48px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    position: relative;
+}
+.bar {
+    width: 100%;
+    border-radius: 6px 6px 0 0;
+    transition: height 0.6s ease;
+}
+.bar.investment { background: linear-gradient(180deg, #667eea, #764ba2); }
+.bar.revenue { background: linear-gradient(180deg, #27ae60, #2ecc71); }
+.bar.profit { background: linear-gradient(180deg, #f39c12, #e67e22); }
+.bar-value {
+    position: absolute;
+    top: -24px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+}
+.bar-label {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #777;
+}
+
+/* Risk indicator */
+.risk-section {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.risk-indicator {
+    display: flex;
+    gap: 4px;
+}
+.risk-dot {
+    width: 32px;
+    height: 10px;
+    border-radius: 5px;
+    background: #e8e8e8;
+}
+.risk-dot.active.low { background: #27ae60; }
+.risk-dot.active.med { background: #f39c12; }
+.risk-dot.active.high { background: #e74c3c; }
+.risk-label {
+    font-size: 14px;
+    font-weight: 600;
+}
+.risk-label.low { color: #27ae60; }
+.risk-label.med { color: #f39c12; }
+.risk-label.high { color: #e74c3c; }
+
+/* Conclusion */
+.conclusion-box {
+    background: #f8f9fc;
+    border-radius: 10px;
+    padding: 20px;
+    border-left: 4px solid #667eea;
+    font-size: 14px;
+    line-height: 1.8;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    .finance-cards { grid-template-columns: repeat(2, 1fr); }
+    .bar-chart { gap: 12px; }
+}
+@media (max-width: 480px) {
+    .finance-cards { grid-template-columns: 1fr; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="bc-breadcrumb">
+    <a href="/dashboard">首页</a> &gt; <a href="/pipeline">项目管线</a> &gt; <span id="bcProjectName">商业论证</span>
+</div>
+
+<div class="bc-header">
+    <h2>&#128200; 商业论证分析</h2>
+    <button class="btn btn-primary" onclick="openEditModal()">编辑论证</button>
+</div>
+
+<!-- Financial Cards -->
+<div class="finance-cards">
+    <div class="fc">
+        <div class="icon">&#128176;</div>
+        <div class="label">投资金额</div>
+        <div class="value" id="fcInvestment">--<span class="unit"> 万元</span></div>
+    </div>
+    <div class="fc">
+        <div class="icon">&#128200;</div>
+        <div class="label">预期收入</div>
+        <div class="value purple" id="fcRevenue">--<span class="unit"> 万元</span></div>
+    </div>
+    <div class="fc">
+        <div class="icon">&#128640;</div>
+        <div class="label">投资回报率 (ROI)</div>
+        <div class="value green" id="fcROI">--<span class="unit">%</span></div>
+    </div>
+    <div class="fc">
+        <div class="icon">&#9200;</div>
+        <div class="label">回收期</div>
+        <div class="value" id="fcPayback">--<span class="unit"> 个月</span></div>
+    </div>
+</div>
+
+<!-- Bar Chart -->
+<div class="card">
+    <div class="card-title">财务对比</div>
+    <div class="bar-chart" id="barChart">
+        <div class="bar-group">
+            <div class="bar-wrapper">
+                <div class="bar-value" id="barInvVal">--</div>
+                <div class="bar investment" id="barInv" style="height:0"></div>
+            </div>
+            <div class="bar-label">投资金额</div>
+        </div>
+        <div class="bar-group">
+            <div class="bar-wrapper">
+                <div class="bar-value" id="barRevVal">--</div>
+                <div class="bar revenue" id="barRev" style="height:0"></div>
+            </div>
+            <div class="bar-label">预期收入</div>
+        </div>
+        <div class="bar-group">
+            <div class="bar-wrapper">
+                <div class="bar-value" id="barProfitVal">--</div>
+                <div class="bar profit" id="barProfit" style="height:0"></div>
+            </div>
+            <div class="bar-label">预期利润</div>
+        </div>
+    </div>
+</div>
+
+<!-- Risk -->
+<div class="card">
+    <div class="card-title">风险评估</div>
+    <div class="risk-section">
+        <span style="font-size:14px;color:#666;">风险等级:</span>
+        <div class="risk-indicator" id="riskDots">
+            <div class="risk-dot"></div>
+            <div class="risk-dot"></div>
+            <div class="risk-dot"></div>
+            <div class="risk-dot"></div>
+            <div class="risk-dot"></div>
+        </div>
+        <span class="risk-label" id="riskLabel">--</span>
+    </div>
+</div>
+
+<!-- Conclusion -->
+<div class="card">
+    <div class="card-title">结论与建议</div>
+    <div class="conclusion-box" id="conclusionBox">加载中...</div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="editModal">
+    <div class="modal">
+        <button onclick="closeEditModal()" style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">&times;</button>
+        <div class="modal-title">编辑商业论证</div>
+        <form onsubmit="saveBizCase(event)">
+            <div class="form-group">
+                <label>投资金额 (万元)</label>
+                <input type="number" id="editInvestment" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>预期收入 (万元)</label>
+                <input type="number" id="editRevenue" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label>投资回报率 ROI (%)</label>
+                <input type="number" id="editROI" step="0.1" required>
+            </div>
+            <div class="form-group">
+                <label>回收期 (月)</label>
+                <input type="number" id="editPayback" required>
+            </div>
+            <div class="form-group">
+                <label>风险等级</label>
+                <select id="editRisk">
+                    <option value="低">低</option>
+                    <option value="中">中</option>
+                    <option value="高">高</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>结论与建议</label>
+                <textarea id="editConclusion" rows="4" placeholder="请输入论证结论和建议..."></textarea>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="closeEditModal()">取消</button>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const PROJECT_ID = '{{ project_id }}';
+let bizCaseData = {};
+
+// Load project name
+if (PROJECT_ID) {
+    fetch('/api/projects/' + PROJECT_ID)
+        .then(r => r.json())
+        .then(p => {
+            document.getElementById('bcProjectName').textContent = (p.name || '项目') + ' - 商业论证';
+        })
+        .catch(() => {});
+}
+
+// Load business case
+function loadBizCase() {
+    const url = PROJECT_ID ? '/api/projects/' + PROJECT_ID + '/business-case' : '/api/business-case';
+    fetch(url)
+        .then(r => r.json())
+        .then(data => {
+            bizCaseData = data.business_case || data || {};
+            renderBizCase(bizCaseData);
+        })
+        .catch(() => {
+            renderBizCase({});
+        });
+}
+
+function renderBizCase(bc) {
+    const inv = bc.investment_amount || 0;
+    const rev = bc.expected_revenue || 0;
+    const roi = bc.roi || 0;
+    const payback = bc.payback_period || 0;
+    const risk = bc.risk_level || '中';
+    const conclusion = bc.conclusion || '暂无结论与建议信息。';
+    const profit = rev - inv;
+
+    document.getElementById('fcInvestment').innerHTML = inv + '<span class="unit"> 万元</span>';
+    document.getElementById('fcRevenue').innerHTML = rev + '<span class="unit"> 万元</span>';
+    document.getElementById('fcROI').innerHTML = roi + '<span class="unit">%</span>';
+    document.getElementById('fcPayback').innerHTML = payback + '<span class="unit"> 个月</span>';
+
+    // Bar chart
+    const maxVal = Math.max(inv, rev, Math.abs(profit), 1);
+    document.getElementById('barInvVal').textContent = inv + '万';
+    document.getElementById('barRevVal').textContent = rev + '万';
+    document.getElementById('barProfitVal').textContent = profit + '万';
+    setTimeout(() => {
+        document.getElementById('barInv').style.height = (inv / maxVal * 140) + 'px';
+        document.getElementById('barRev').style.height = (rev / maxVal * 140) + 'px';
+        document.getElementById('barProfit').style.height = (Math.abs(profit) / maxVal * 140) + 'px';
+    }, 100);
+
+    // Risk
+    const riskMap = { '低': 1, '中': 3, '高': 5 };
+    const riskLevel = riskMap[risk] || 3;
+    const dots = document.getElementById('riskDots').children;
+    const riskClass = risk === '高' ? 'high' : risk === '低' ? 'low' : 'med';
+    for (let i = 0; i < dots.length; i++) {
+        dots[i].className = 'risk-dot' + (i < riskLevel ? ' active ' + riskClass : '');
+    }
+    const rl = document.getElementById('riskLabel');
+    rl.textContent = risk + '风险';
+    rl.className = 'risk-label ' + riskClass;
+
+    // Conclusion
+    document.getElementById('conclusionBox').textContent = conclusion;
+
+    // Pre-fill edit form
+    document.getElementById('editInvestment').value = inv;
+    document.getElementById('editRevenue').value = rev;
+    document.getElementById('editROI').value = roi;
+    document.getElementById('editPayback').value = payback;
+    document.getElementById('editRisk').value = risk;
+    document.getElementById('editConclusion').value = bc.conclusion || '';
+}
+
+function openEditModal() { document.getElementById('editModal').classList.add('show'); }
+function closeEditModal() { document.getElementById('editModal').classList.remove('show'); }
+
+function saveBizCase(e) {
+    e.preventDefault();
+    const url = PROJECT_ID ? '/api/projects/' + PROJECT_ID + '/business-case' : '/api/business-case';
+    fetch(url, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            investment_amount: parseFloat(document.getElementById('editInvestment').value),
+            expected_revenue: parseFloat(document.getElementById('editRevenue').value),
+            roi: parseFloat(document.getElementById('editROI').value),
+            payback_period: parseInt(document.getElementById('editPayback').value),
+            risk_level: document.getElementById('editRisk').value,
+            conclusion: document.getElementById('editConclusion').value
+        })
+    }).then(r => r.json())
+      .then(() => { closeEditModal(); loadBizCase(); })
+      .catch(err => alert('保存失败: ' + err.message));
+}
+
+loadBizCase();
+</script>
+{% endblock %}

@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统一门户登录 - 母婴数字化平台</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            overflow: hidden;
+        }
+
+        /* Left - Branding */
+        .login-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 60px 80px;
+            color: white;
+            position: relative;
+        }
+
+        .login-left::before {
+            content: '';
+            position: absolute;
+            top: -20%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+
+        .login-left::after {
+            content: '';
+            position: absolute;
+            bottom: -10%;
+            right: 10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 50%;
+        }
+
+        .brand-logo {
+            font-size: 42px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-subtitle {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 48px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-features {
+            list-style: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            font-size: 15px;
+            opacity: 0.9;
+        }
+
+        .brand-features li span.icon {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .dual-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 40px;
+            padding: 16px 24px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .dual-badge .badge {
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .badge-plm {
+            background: rgba(82, 196, 26, 0.3);
+            border: 1px solid rgba(82, 196, 26, 0.5);
+        }
+
+        .badge-ipms {
+            background: rgba(255, 197, 61, 0.3);
+            border: 1px solid rgba(255, 197, 61, 0.5);
+        }
+
+        .dual-badge .plus {
+            font-size: 18px;
+            opacity: 0.6;
+        }
+
+        /* Right - Login Form */
+        .login-right {
+            width: 480px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .login-card h2 {
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .login-card .subtitle {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        .form-group input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #ccc;
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 13px;
+        }
+
+        .form-options label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .form-options a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.4);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 20px 0;
+            color: #ccc;
+            font-size: 12px;
+        }
+
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #eee;
+        }
+
+        .third-party {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .third-party-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            border: 1.5px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .third-party-btn:hover {
+            border-color: #667eea;
+            background: #f9f9ff;
+        }
+
+        /* Platform Selector in Login */
+        .platform-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .platform-option {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .platform-option:hover {
+            border-color: #667eea;
+        }
+
+        .platform-option.active {
+            border-color: #667eea;
+            background: #f5f7ff;
+        }
+
+        .platform-option .p-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        .platform-option .p-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .platform-option .p-desc {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 900px) {
+            body { flex-direction: column; }
+            .login-left { padding: 40px; min-height: auto; }
+            .login-right { width: 100%; }
+            .dual-badge { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Left Branding -->
+<div class="login-left">
+    <div class="brand-logo">&#9734; 母婴数字化平台</div>
+    <div class="brand-subtitle">
+        双轨驱动，保障每一个新品从出生到上市的商业成功<br>
+        研发管理 + 商业成功，一个平台全掌控
+    </div>
+
+    <ul class="brand-features">
+        <li>
+            <span class="icon">&#128269;</span>
+            <span>从市场洞察到上市复盘，全链路方法论沉淀</span>
+        </li>
+        <li>
+            <span class="icon">&#9878;</span>
+            <span>Stage-Gate 阶段门径，每一步都有质量关卡</span>
+        </li>
+        <li>
+            <span class="icon">&#128200;</span>
+            <span>新品成功率从 35% 提升至 78%</span>
+        </li>
+        <li>
+            <span class="icon">&#128279;</span>
+            <span>PLM + IPMS 双轨协同，研发与商业无缝衔接</span>
+        </li>
+    </ul>
+
+    <div class="dual-badge">
+        <span class="badge badge-plm">PLM 研发管理</span>
+        <span class="plus">+</span>
+        <span class="badge badge-ipms">IPMS 商业成功</span>
+        <span style="opacity:0.7; font-size:13px; margin-left:8px;">双轨并行</span>
+    </div>
+</div>
+
+<!-- Right Login Form -->
+<div class="login-right">
+    <div class="login-card">
+        <h2>&#128075; 欢迎登录</h2>
+        <p class="subtitle">母婴数字化平台统一门户</p>
+
+        <!-- Platform Selector -->
+        <div class="platform-selector">
+            <div class="platform-option" onclick="selectPlatform(this, 'plm')">
+                <div class="p-icon">&#9881;</div>
+                <div class="p-name">PLM</div>
+                <div class="p-desc">研发管理平台</div>
+            </div>
+            <div class="platform-option active" onclick="selectPlatform(this, 'ipms')">
+                <div class="p-icon">&#128640;</div>
+                <div class="p-name">IPMS</div>
+                <div class="p-desc">商业成功平台</div>
+            </div>
+            <div class="platform-option" onclick="selectPlatform(this, 'both')">
+                <div class="p-icon">&#128279;</div>
+                <div class="p-name">全部</div>
+                <div class="p-desc">双平台视图</div>
+            </div>
+        </div>
+
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>工号 / 账号</label>
+                <input type="text" placeholder="请输入工号或账号" value="admin">
+            </div>
+            <div class="form-group">
+                <label>密码</label>
+                <input type="password" placeholder="请输入密码" value="123456">
+            </div>
+            <div class="form-options">
+                <label><input type="checkbox" checked> 记住登录状态</label>
+                <a href="#">忘记密码？</a>
+            </div>
+            <button type="submit" class="btn-login">登 录</button>
+        </form>
+
+        <div class="divider">其他登录方式</div>
+        <div class="third-party">
+            <div class="third-party-btn" title="企业微信">&#128172;</div>
+            <div class="third-party-btn" title="钉钉">&#128228;</div>
+            <div class="third-party-btn" title="SSO单点登录">&#128274;</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedPlatform = 'ipms';
+
+    function selectPlatform(el, platform) {
+        document.querySelectorAll('.platform-option').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        selectedPlatform = platform;
+    }
+
+    function handleLogin(e) {
+        e.preventDefault();
+        // Demo: always redirect to IPMS
+        if (selectedPlatform === 'plm') {
+            alert('PLM 研发管理平台（演示中，跳转到 IPMS）');
+        }
+        window.location.href = 'index.html';
+    }
+</script>
+
+</body>
+</html>

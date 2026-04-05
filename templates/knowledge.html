@@ -1,0 +1,271 @@
+{% extends "base.html" %}
+{% block title %}知识库 - IPMS{% endblock %}
+
+{% block extra_css %}
+.knowledge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.knowledge-header h2 { font-size: 20px; font-weight: 600; }
+
+.search-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+.search-bar input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+}
+.search-bar input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+
+/* Tabs */
+.k-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #eee;
+    margin-bottom: 24px;
+}
+.k-tab {
+    padding: 10px 24px;
+    font-size: 14px;
+    color: #777;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    transition: all 0.2s;
+    background: none;
+    border-top: none; border-left: none; border-right: none;
+    font-family: inherit;
+}
+.k-tab:hover { color: #667eea; }
+.k-tab.active { color: #667eea; border-bottom-color: #667eea; font-weight: 600; }
+
+/* Knowledge grid */
+.knowledge-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+.knowledge-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+.knowledge-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.knowledge-card-icon {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 14px;
+}
+.knowledge-card-icon.tpl { background: #f0edff; }
+.knowledge-card-icon.case { background: #e6f9f0; }
+.knowledge-card-icon.report { background: #e8f4fd; }
+.knowledge-card-icon.best { background: #fff5e6; }
+.knowledge-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 6px;
+}
+.knowledge-card-desc {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.knowledge-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #aaa;
+}
+.knowledge-card-footer .usage { color: #667eea; }
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #bbb;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+    .knowledge-grid { grid-template-columns: 1fr; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="knowledge-header">
+    <h2>&#128218; 知识库</h2>
+    <button class="btn btn-primary" onclick="openAddModal()">+ 新增文档</button>
+</div>
+
+<div class="search-bar">
+    <input type="text" id="searchInput" placeholder="搜索知识库文档..." oninput="filterCards()">
+    <button class="btn btn-primary" onclick="filterCards()">搜索</button>
+</div>
+
+<div class="k-tabs">
+    <button class="k-tab active" onclick="switchKTab(this, 'all')">全部</button>
+    <button class="k-tab" onclick="switchKTab(this, '方法论模板')">方法论模板</button>
+    <button class="k-tab" onclick="switchKTab(this, '历史案例')">历史案例</button>
+    <button class="k-tab" onclick="switchKTab(this, '行业报告')">行业报告</button>
+    <button class="k-tab" onclick="switchKTab(this, '最佳实践')">最佳实践</button>
+</div>
+
+<div class="knowledge-grid" id="knowledgeGrid">
+    <div class="empty-state">加载中...</div>
+</div>
+
+<!-- Add Modal -->
+<div class="modal-overlay" id="addModal">
+    <div class="modal">
+        <button onclick="closeAddModal()" style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">&times;</button>
+        <div class="modal-title">新增知识文档</div>
+        <form onsubmit="submitKnowledge(event)">
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" id="kTitle" required placeholder="文档标题">
+            </div>
+            <div class="form-group">
+                <label>类别</label>
+                <select id="kCategory">
+                    <option value="方法论模板">方法论模板</option>
+                    <option value="历史案例">历史案例</option>
+                    <option value="行业报告">行业报告</option>
+                    <option value="最佳实践">最佳实践</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>摘要描述</label>
+                <textarea id="kDescription" placeholder="简要描述文档内容..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>内容</label>
+                <textarea id="kContent" rows="6" placeholder="文档正文内容..."></textarea>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="closeAddModal()">取消</button>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let allItems = [];
+let currentCategory = 'all';
+
+const ICONS = {
+    '方法论模板': { cls: 'tpl', icon: '&#128221;' },
+    '历史案例': { cls: 'case', icon: '&#128214;' },
+    '行业报告': { cls: 'report', icon: '&#128200;' },
+    '最佳实践': { cls: 'best', icon: '&#11088;' }
+};
+
+function loadKnowledge() {
+    fetch('/api/knowledge')
+        .then(r => r.json())
+        .then(data => {
+            allItems = data.items || data.knowledge || data || [];
+            renderGrid();
+        })
+        .catch(() => {
+            allItems = [];
+            renderGrid();
+        });
+}
+
+function renderGrid() {
+    const query = (document.getElementById('searchInput').value || '').toLowerCase();
+    let items = allItems;
+    if (currentCategory !== 'all') {
+        items = items.filter(i => i.category === currentCategory);
+    }
+    if (query) {
+        items = items.filter(i => (i.title || '').toLowerCase().includes(query) || (i.description || '').toLowerCase().includes(query));
+    }
+
+    const grid = document.getElementById('knowledgeGrid');
+    if (!items.length) {
+        grid.innerHTML = '<div class="empty-state">暂无相关文档</div>';
+        return;
+    }
+    grid.innerHTML = items.map(i => {
+        const ic = ICONS[i.category] || ICONS['方法论模板'];
+        return `<div class="knowledge-card" onclick="viewItem(${i.id})">
+            <div class="knowledge-card-icon ${ic.cls}">${ic.icon}</div>
+            <div class="knowledge-card-title">${i.title || ''}</div>
+            <div class="knowledge-card-desc">${i.description || i.content || ''}</div>
+            <div class="knowledge-card-footer">
+                <span class="badge badge-purple">${i.category || '未分类'}</span>
+                <span class="usage">使用 ${i.usage_count || 0} 次</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function switchKTab(el, cat) {
+    document.querySelectorAll('.k-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    currentCategory = cat;
+    renderGrid();
+}
+
+function filterCards() {
+    renderGrid();
+}
+
+function viewItem(id) {
+    alert('查看知识文档 #' + id + ' (详情页开发中)');
+}
+
+function openAddModal() { document.getElementById('addModal').classList.add('show'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('show'); }
+
+function submitKnowledge(e) {
+    e.preventDefault();
+    fetch('/api/knowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            title: document.getElementById('kTitle').value,
+            category: document.getElementById('kCategory').value,
+            description: document.getElementById('kDescription').value,
+            content: document.getElementById('kContent').value
+        })
+    }).then(r => r.json())
+      .then(() => { closeAddModal(); loadKnowledge(); })
+      .catch(err => alert('保存失败: ' + err.message));
+}
+
+loadKnowledge();
+</script>
+{% endblock %}

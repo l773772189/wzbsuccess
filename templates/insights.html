@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+{% block title %}市场洞察 - IPMS{% endblock %}
+
+{% block extra_css %}
+.insights-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.insights-header h2 { font-size: 20px; font-weight: 600; }
+
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.filter-bar select, .filter-bar input {
+    padding: 9px 14px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    background: #fff;
+    transition: border-color 0.2s;
+}
+.filter-bar select:focus, .filter-bar input:focus {
+    border-color: #667eea;
+}
+.filter-bar input { flex: 1; min-width: 200px; }
+
+/* Insight cards */
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+.insight-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    transition: all 0.2s;
+    border-left: 4px solid transparent;
+}
+.insight-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.insight-card[data-type="趋势分析"] { border-left-color: #667eea; }
+.insight-card[data-type="消费者研究"] { border-left-color: #27ae60; }
+.insight-card[data-type="竞品分析"] { border-left-color: #e67e22; }
+.insight-card[data-type="需求洞察"] { border-left-color: #e74c3c; }
+
+.insight-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+}
+.insight-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #333;
+    flex: 1;
+}
+.insight-card-content {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.insight-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #aaa;
+    padding-top: 10px;
+    border-top: 1px solid #f5f5f5;
+}
+.insight-card-project { color: #667eea; font-weight: 500; }
+
+.type-badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.type-badge.趋势分析 { background: #f0edff; color: #667eea; }
+.type-badge.消费者研究 { background: #e6f9f0; color: #27ae60; }
+.type-badge.竞品分析 { background: #fff5e6; color: #e67e22; }
+.type-badge.需求洞察 { background: #fde8e8; color: #e74c3c; }
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #bbb;
+    font-size: 14px;
+    grid-column: 1 / -1;
+}
+
+.stats-mini {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.stats-mini .stat {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.stats-mini .stat .num { font-size: 24px; font-weight: 700; color: #667eea; }
+.stats-mini .stat .lbl { font-size: 12px; color: #999; margin-top: 4px; }
+
+@media (max-width: 768px) {
+    .stats-mini { grid-template-columns: repeat(2, 1fr); }
+    .insights-grid { grid-template-columns: 1fr; }
+}
+{% endblock %}
+
+{% block content %}
+<div class="insights-header">
+    <h2>&#128269; 市场洞察</h2>
+    <button class="btn btn-primary" onclick="openAddInsight()">+ 新增洞察</button>
+</div>
+
+<!-- Mini stats -->
+<div class="stats-mini" id="insightStats">
+    <div class="stat"><div class="num" id="statTotal">--</div><div class="lbl">洞察总数</div></div>
+    <div class="stat"><div class="num" id="statTrend">--</div><div class="lbl">趋势分析</div></div>
+    <div class="stat"><div class="num" id="statConsumer">--</div><div class="lbl">消费者研究</div></div>
+    <div class="stat"><div class="num" id="statCompetitor">--</div><div class="lbl">竞品分析</div></div>
+</div>
+
+<!-- Filters -->
+<div class="filter-bar">
+    <select id="filterProject" onchange="filterInsights()">
+        <option value="">全部项目</option>
+    </select>
+    <select id="filterType" onchange="filterInsights()">
+        <option value="">全部类型</option>
+        <option value="趋势分析">趋势分析</option>
+        <option value="消费者研究">消费者研究</option>
+        <option value="竞品分析">竞品分析</option>
+        <option value="需求洞察">需求洞察</option>
+    </select>
+    <input type="text" id="filterSearch" placeholder="搜索洞察标题或内容..." oninput="filterInsights()">
+</div>
+
+<div class="insights-grid" id="insightsGrid">
+    <div class="empty-state">加载中...</div>
+</div>
+
+<!-- Add Insight Modal -->
+<div class="modal-overlay" id="addInsightModal">
+    <div class="modal">
+        <button onclick="closeAddInsight()" style="float:right;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">&times;</button>
+        <div class="modal-title">新增市场洞察</div>
+        <form onsubmit="submitNewInsight(event)">
+            <div class="form-group">
+                <label>关联项目</label>
+                <select id="newInsightProject"></select>
+            </div>
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" id="newInsightTitle" required placeholder="洞察标题">
+            </div>
+            <div class="form-group">
+                <label>类型</label>
+                <select id="newInsightType">
+                    <option value="趋势分析">趋势分析</option>
+                    <option value="消费者研究">消费者研究</option>
+                    <option value="竞品分析">竞品分析</option>
+                    <option value="需求洞察">需求洞察</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>洞察内容</label>
+                <textarea id="newInsightContent" rows="4" required placeholder="描述您的市场洞察..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>数据来源</label>
+                <input type="text" id="newInsightSource" placeholder="如: 尼尔森、内部调研、公开数据等">
+            </div>
+            <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
+                <button type="button" class="btn btn-outline" onclick="closeAddInsight()">取消</button>
+                <button type="submit" class="btn btn-primary">保存</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let allInsights = [];
+let allProjects = [];
+
+// Load projects for filter
+fetch('/api/projects')
+    .then(r => r.json())
+    .then(data => {
+        allProjects = data.projects || data || [];
+        const sel = document.getElementById('filterProject');
+        const sel2 = document.getElementById('newInsightProject');
+        allProjects.forEach(p => {
+            sel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+            sel2.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+        });
+    })
+    .catch(() => {});
+
+// Load insights
+function loadInsights() {
+    fetch('/api/insights')
+        .then(r => r.json())
+        .then(data => {
+            allInsights = data.insights || data || [];
+            updateStats();
+            filterInsights();
+        })
+        .catch(() => {
+            // fallback: try activities
+            fetch('/api/activities')
+                .then(r => r.json())
+                .then(data => {
+                    allInsights = (data.activities || data || []).filter(a => a.type === 'insight' || a.insight_type);
+                    updateStats();
+                    filterInsights();
+                })
+                .catch(() => {
+                    allInsights = [];
+                    updateStats();
+                    filterInsights();
+                });
+        });
+}
+
+function updateStats() {
+    document.getElementById('statTotal').textContent = allInsights.length;
+    document.getElementById('statTrend').textContent = allInsights.filter(i => (i.insight_type || i.type) === '趋势分析').length;
+    document.getElementById('statConsumer').textContent = allInsights.filter(i => (i.insight_type || i.type) === '消费者研究').length;
+    document.getElementById('statCompetitor').textContent = allInsights.filter(i => (i.insight_type || i.type) === '竞品分析').length;
+}
+
+function filterInsights() {
+    const projId = document.getElementById('filterProject').value;
+    const type = document.getElementById('filterType').value;
+    const query = (document.getElementById('filterSearch').value || '').toLowerCase();
+
+    let items = allInsights;
+    if (projId) items = items.filter(i => String(i.project_id) === projId);
+    if (type) items = items.filter(i => (i.insight_type || i.type) === type);
+    if (query) items = items.filter(i =>
+        (i.title || '').toLowerCase().includes(query) ||
+        (i.content || '').toLowerCase().includes(query)
+    );
+
+    renderInsights(items);
+}
+
+function renderInsights(items) {
+    const grid = document.getElementById('insightsGrid');
+    if (!items.length) {
+        grid.innerHTML = '<div class="empty-state">暂无洞察数据</div>';
+        return;
+    }
+    grid.innerHTML = items.map(i => {
+        const type = i.insight_type || i.type || '趋势分析';
+        const proj = allProjects.find(p => p.id === i.project_id);
+        return `<div class="insight-card" data-type="${type}">
+            <div class="insight-card-header">
+                <div class="insight-card-title">${i.title || '未命名'}</div>
+                <span class="type-badge ${type}">${type}</span>
+            </div>
+            <div class="insight-card-content">${i.content || ''}</div>
+            <div class="insight-card-footer">
+                <span class="insight-card-project">${proj ? proj.name : ('项目 #' + (i.project_id || ''))}</span>
+                <span>来源: ${i.source || '内部'} &middot; ${i.created_at || ''}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openAddInsight() { document.getElementById('addInsightModal').classList.add('show'); }
+function closeAddInsight() { document.getElementById('addInsightModal').classList.remove('show'); }
+
+function submitNewInsight(e) {
+    e.preventDefault();
+    const projId = document.getElementById('newInsightProject').value;
+    fetch('/api/projects/' + projId + '/insights', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            project_id: parseInt(projId),
+            title: document.getElementById('newInsightTitle').value,
+            insight_type: document.getElementById('newInsightType').value,
+            content: document.getElementById('newInsightContent').value,
+            source: document.getElementById('newInsightSource').value
+        })
+    }).then(r => r.json())
+      .then(() => { closeAddInsight(); loadInsights(); })
+      .catch(err => alert('保存失败: ' + err.message));
+}
+
+loadInsights();
+</script>
+{% endblock %}

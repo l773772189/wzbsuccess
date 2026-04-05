@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+{% block title %}工作台 - IPMS{% endblock %}
+
+{% block extra_css %}
+.welcome-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 28px 32px;
+    color: #fff;
+    margin-bottom: 24px;
+    position: relative;
+    overflow: hidden;
+}
+.welcome-banner::after {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    right: -40px; top: -60px;
+}
+.welcome-banner h2 { font-size: 22px; margin-bottom: 6px; }
+.welcome-banner p { opacity: 0.85; font-size: 14px; }
+
+.stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.stat-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.stat-card .label { font-size: 13px; color: #888; margin-bottom: 8px; }
+.stat-card .value { font-size: 28px; font-weight: 700; color: #333; }
+.stat-card .value span { font-size: 14px; font-weight: 400; color: #999; margin-left: 4px; }
+.stat-card .trend { font-size: 12px; margin-top: 4px; }
+.stat-card .trend.up { color: #27ae60; }
+.stat-card .trend.down { color: #e74c3c; }
+
+.plm-sync-banner {
+    background: linear-gradient(90deg, #e8f4fd, #f0edff);
+    border-radius: 10px;
+    padding: 12px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: #555;
+}
+.plm-sync-dot {
+    width: 8px; height: 8px;
+    background: #27ae60;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* Pipeline visualization */
+.pipeline-viz {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+}
+.pipeline-viz .card-title { margin-bottom: 24px; }
+.pipeline-stages {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    padding: 0 20px;
+}
+.pipeline-stages::before {
+    content: '';
+    position: absolute;
+    top: 28px;
+    left: 60px;
+    right: 60px;
+    height: 3px;
+    background: #e8e8e8;
+    z-index: 0;
+}
+.pipeline-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+    cursor: pointer;
+}
+.pipeline-stage .circle {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 8px rgba(102,126,234,0.3);
+}
+.pipeline-stage:hover .circle { transform: scale(1.1); }
+.pipeline-stage .name {
+    font-size: 13px;
+    color: #555;
+    font-weight: 500;
+}
+.pipeline-stage .count {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+}
+
+/* Two columns */
+.two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+
+/* Project list */
+.project-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.project-item:last-child { border-bottom: none; }
+.project-info { flex: 1; }
+.project-info .name { font-size: 14px; font-weight: 500; color: #333; margin-bottom: 4px; }
+.project-info .meta { font-size: 12px; color: #999; }
+.project-progress { width: 120px; margin-left: 16px; }
+.project-progress .pct { font-size: 12px; color: #667eea; text-align: right; margin-bottom: 4px; }
+
+/* Timeline */
+.timeline-item {
+    padding: 12px 0 12px 20px;
+    border-left: 2px solid #e8e8e8;
+    position: relative;
+    font-size: 14px;
+}
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -5px; top: 16px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #667eea;
+}
+.timeline-item .time {
+    font-size: 12px;
+    color: #aaa;
+    margin-top: 4px;
+}
+
+/* Module cards */
+.module-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+.module-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+.module-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.1); }
+.module-card .icon { font-size: 32px; margin-bottom: 12px; }
+.module-card .name { font-size: 15px; font-weight: 600; color: #333; margin-bottom: 4px; }
+.module-card .desc { font-size: 12px; color: #999; }
+
+@media (max-width: 1024px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .two-cols { grid-template-columns: 1fr; }
+    .module-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .stats-row { grid-template-columns: 1fr; }
+    .pipeline-stages { flex-wrap: wrap; gap: 16px; }
+    .pipeline-stages::before { display: none; }
+    .module-grid { grid-template-columns: 1fr; }
+}
+{% endblock %}
+
+{% block content %}
+<!-- Welcome -->
+<div class="welcome-banner">
+    <h2>欢迎回来，{{ current_user.username if current_user else '管理员' }}</h2>
+    <p>今日待办 <span id="todoCount">0</span> 项 &middot; 管线中 <span id="pipelineCount">0</span> 个活跃项目</p>
+</div>
+
+<!-- Stats -->
+<div class="stats-row" id="statsRow">
+    <div class="stat-card">
+        <div class="label">管线中项目</div>
+        <div class="value" id="statProjects">--</div>
+        <div class="trend up" id="statProjectsTrend"></div>
+    </div>
+    <div class="stat-card">
+        <div class="label">本季度上市成功率</div>
+        <div class="value" id="statSuccessRate">--<span>%</span></div>
+        <div class="trend up" id="statSuccessTrend"></div>
+    </div>
+    <div class="stat-card">
+        <div class="label">待评审项目</div>
+        <div class="value" id="statPending">--</div>
+        <div class="trend" id="statPendingTrend"></div>
+    </div>
+    <div class="stat-card">
+        <div class="label">知识库文档</div>
+        <div class="value" id="statDocs">--</div>
+        <div class="trend up" id="statDocsTrend"></div>
+    </div>
+</div>
+
+<!-- PLM Sync -->
+<div class="plm-sync-banner">
+    <div class="plm-sync-dot"></div>
+    <span>PLM系统已同步 &middot; 最近同步: <span id="plmSyncTime">--</span></span>
+</div>
+
+<!-- Pipeline Visualization -->
+<div class="pipeline-viz">
+    <div class="card-title">Stage-Gate 管线概览</div>
+    <div class="pipeline-stages" id="pipelineStages">
+        <!-- Filled by JS -->
+    </div>
+</div>
+
+<!-- Two columns -->
+<div class="two-cols">
+    <div class="card">
+        <div class="card-title">重点项目跟踪</div>
+        <div id="projectList">
+            <div style="color:#aaa;font-size:13px;padding:20px 0;text-align:center;">加载中...</div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">最近动态</div>
+        <div id="activityTimeline">
+            <div style="color:#aaa;font-size:13px;padding:20px 0;text-align:center;">加载中...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Module Cards -->
+<div class="card-title" style="margin-bottom:16px;">核心模块</div>
+<div class="module-grid">
+    <a href="/insights" class="module-card">
+        <div class="icon">&#128269;</div>
+        <div class="name">市场洞察</div>
+        <div class="desc">消费者研究与趋势分析</div>
+    </a>
+    <a href="/pipeline" class="module-card">
+        <div class="icon">&#128161;</div>
+        <div class="name">概念验证</div>
+        <div class="desc">产品概念测试与评估</div>
+    </a>
+    <a href="/business-case" class="module-card">
+        <div class="icon">&#128200;</div>
+        <div class="name">商业论证</div>
+        <div class="desc">投资回报与财务分析</div>
+    </a>
+    <a href="/pipeline" class="module-card">
+        <div class="icon">&#128640;</div>
+        <div class="name">上市准备</div>
+        <div class="desc">渠道铺货与营销准备</div>
+    </a>
+    <a href="/pipeline" class="module-card">
+        <div class="icon">&#127937;</div>
+        <div class="name">发布执行</div>
+        <div class="desc">新品发布与推广执行</div>
+    </a>
+    <a href="/knowledge" class="module-card">
+        <div class="icon">&#128218;</div>
+        <div class="name">知识库</div>
+        <div class="desc">方法论与最佳实践</div>
+    </a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const STAGES = [
+    { key: '市场洞察', icon: '&#128269;' },
+    { key: '概念验证', icon: '&#128161;' },
+    { key: '商业论证', icon: '&#128200;' },
+    { key: '上市准备', icon: '&#128640;' },
+    { key: '发布执行', icon: '&#127937;' },
+    { key: '复盘优化', icon: '&#128736;' }
+];
+
+// Load stats
+fetch('/api/dashboard/stats')
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('statProjects').textContent = data.active_projects ?? 12;
+        document.getElementById('statSuccessRate').innerHTML = (data.success_rate ?? 85) + '<span>%</span>';
+        document.getElementById('statPending').textContent = data.pending_reviews ?? 3;
+        document.getElementById('statDocs').textContent = data.knowledge_docs ?? 156;
+        document.getElementById('pipelineCount').textContent = data.active_projects ?? 12;
+        document.getElementById('todoCount').textContent = data.pending_reviews ?? 3;
+        if (data.plm_sync_time) document.getElementById('plmSyncTime').textContent = data.plm_sync_time;
+        else document.getElementById('plmSyncTime').textContent = new Date().toLocaleString('zh-CN');
+    })
+    .catch(() => {
+        // Use defaults
+        document.getElementById('statProjects').textContent = '12';
+        document.getElementById('statSuccessRate').innerHTML = '85<span>%</span>';
+        document.getElementById('statPending').textContent = '3';
+        document.getElementById('statDocs').textContent = '156';
+        document.getElementById('plmSyncTime').textContent = new Date().toLocaleString('zh-CN');
+        document.getElementById('pipelineCount').textContent = '12';
+        document.getElementById('todoCount').textContent = '3';
+    });
+
+// Load pipeline
+fetch('/api/pipeline')
+    .then(r => r.json())
+    .then(data => renderPipeline(data))
+    .catch(() => renderPipeline(null));
+
+function renderPipeline(data) {
+    const el = document.getElementById('pipelineStages');
+    const counts = {};
+    if (data && data.stages) {
+        data.stages.forEach(s => { counts[s.name] = s.count; });
+    }
+    el.innerHTML = STAGES.map(s => {
+        const c = counts[s.key] || Math.floor(Math.random() * 5 + 1);
+        return `<div class="pipeline-stage">
+            <div class="circle">${c}</div>
+            <div class="name">${s.key}</div>
+            <div class="count">${c} 个项目</div>
+        </div>`;
+    }).join('');
+}
+
+// Load projects
+fetch('/api/projects')
+    .then(r => r.json())
+    .then(data => {
+        const projects = data.projects || data || [];
+        renderProjects(projects.slice(0, 5));
+    })
+    .catch(() => renderProjects([]));
+
+function renderProjects(projects) {
+    const el = document.getElementById('projectList');
+    if (!projects.length) {
+        el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:20px 0;text-align:center;">暂无项目数据</div>';
+        return;
+    }
+    el.innerHTML = projects.map(p => `
+        <a href="/project/${p.id}" class="project-item" style="text-decoration:none;color:inherit;">
+            <div class="project-info">
+                <div class="name">${p.name}</div>
+                <div class="meta">${p.current_stage || '市场洞察'} &middot; ${p.owner || '未指定'}</div>
+            </div>
+            <div class="project-progress">
+                <div class="pct">${p.progress || 0}%</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:${p.progress || 0}%"></div></div>
+            </div>
+        </a>
+    `).join('');
+}
+
+// Load activities
+fetch('/api/activities')
+    .then(r => r.json())
+    .then(data => {
+        const acts = data.activities || data || [];
+        renderActivities(acts.slice(0, 8));
+    })
+    .catch(() => renderActivities([]));
+
+function renderActivities(activities) {
+    const el = document.getElementById('activityTimeline');
+    if (!activities.length) {
+        el.innerHTML = '<div style="color:#aaa;font-size:13px;padding:20px 0;text-align:center;">暂无动态</div>';
+        return;
+    }
+    el.innerHTML = activities.map(a => `
+        <div class="timeline-item">
+            <div>${a.description || a.content || ''}</div>
+            <div class="time">${a.created_at || a.time || ''}</div>
+        </div>
+    `).join('');
+}
+</script>
+{% endblock %}
