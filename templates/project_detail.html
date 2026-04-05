@@ -427,8 +427,8 @@ function renderGateTimeline(stages) {
         const s = stageMap[name] || {};
         let cls = 'pending';
         let icon = (i + 1);
-        if (s.status === 'completed' || s.status === '已完成') { cls = 'completed'; icon = '&#10003;'; }
-        else if (s.status === 'active' || s.status === '进行中') { cls = 'active'; }
+        if (s.status === 'completed' || s.status === '已完成' || s.status === '已通过') { cls = 'completed'; icon = '&#10003;'; }
+        else if (s.status === 'active' || s.status === '进行中' || s.status === '审核中') { cls = 'active'; }
         const score = s.score ? `<div class="gate-score">评分: ${s.score}</div>` : '';
         const reviewer = s.reviewer ? `<div class="gate-info">评审: ${s.reviewer}</div>` : '';
         return `<div class="gate-stage ${cls}" onclick="showGateDetail('${name}', ${JSON.stringify(s).replace(/"/g, '&quot;')})">

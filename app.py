@@ -17,6 +17,7 @@ def get_db():
     if 'db' not in g:
         g.db = sqlite3.connect(DB_PATH)
         g.db.row_factory = sqlite3.Row
+        g.db.execute("PRAGMA foreign_keys = ON")
         g.db.execute("PRAGMA journal_mode=WAL")
     return g.db
 
@@ -82,12 +83,12 @@ def init_db():
             project_id INTEGER NOT NULL,
             stage_name TEXT NOT NULL,
             stage_order INTEGER NOT NULL,
-            status TEXT DEFAULT 'pending',
+            status TEXT DEFAULT '待审核',
             reviewer TEXT,
             review_date TEXT,
             comments TEXT,
             score INTEGER,
-            FOREIGN KEY (project_id) REFERENCES projects(id)
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
         );
         CREATE TABLE IF NOT EXISTS market_insights (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -98,11 +99,11 @@ def init_db():
             source TEXT,
             created_at TEXT DEFAULT (datetime('now','localtime')),
             created_by INTEGER,
-            FOREIGN KEY (project_id) REFERENCES projects(id)
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
         );
         CREATE TABLE IF NOT EXISTS business_cases (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            project_id INTEGER UNIQUE NOT NULL,
+            project_id INTEGER NOT NULL,
             investment REAL,
             expected_revenue REAL,
             roi REAL,
@@ -110,7 +111,7 @@ def init_db():
             risk_level TEXT,
             conclusion TEXT,
             created_at TEXT DEFAULT (datetime('now','localtime')),
-            FOREIGN KEY (project_id) REFERENCES projects(id)
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
         );
         CREATE TABLE IF NOT EXISTS activities (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,7 +120,7 @@ def init_db():
             action TEXT NOT NULL,
             detail TEXT,
             created_at TEXT DEFAULT (datetime('now','localtime')),
-            FOREIGN KEY (project_id) REFERENCES projects(id)
+            FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE CASCADE
         );
         CREATE TABLE IF NOT EXISTS knowledge_base (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -140,70 +141,72 @@ def init_db():
 def seed_data(db):
     # Users
     db.executemany("INSERT INTO users(username,password,real_name,role,department) VALUES(?,?,?,?,?)", [
-        ('admin','admin123','系统管理员','管理员','数字化部门'),
+        ('admin','admin123','管理员','管理员','管理部'),
         ('zhangsan','123456','张三','产品经理','产品部'),
         ('lisi','123456','李四','市场经理','市场部'),
     ])
     # Projects
     db.executemany("INSERT INTO projects(name,description,category,current_stage,status,owner_id,target_launch_date,progress) VALUES(?,?,?,?,?,?,?,?)", [
-        ('有机婴幼儿奶粉3段升级','针对12-36个月宝宝的有机奶粉升级配方，添加乳铁蛋白和DHA','奶粉','商业论证','进行中',2,'2025-06-30',65),
-        ('智能恒温婴儿睡袋','采用相变材料技术，自动调节睡袋内部温度，保持婴儿舒适睡眠','用品','概念验证','进行中',2,'2025-09-15',40),
-        ('天然植物婴儿湿巾','100%植物纤维，添加金盏花和洋甘菊精华，零添加防腐剂','日用品','上市准备','进行中',3,'2025-04-20',82),
-        ('益生菌儿童软糖系列','针对3-12岁儿童的益生菌软糖，改善肠道健康，多种水果口味','食品','市场洞察','进行中',3,'2025-12-01',20),
+        ('有机婴幼儿奶粉3段升级','针对12-36月龄婴幼儿的有机配方奶粉升级，强化DHA、ARA及益生元组合，提升免疫力与消化吸收。','奶粉','商业论证','进行中',2,'2026-09-01',65),
+        ('智能恒温婴儿睡袋','集成温控芯片与透气面料，自动调节睡袋内温度，配套APP实时监测宝宝睡眠状态。','智能穿戴','概念验证','进行中',2,'2026-12-15',40),
+        ('天然植物婴儿湿巾','采用99.9%天然植物成分，零添加防腐剂与酒精，通过SGS与欧盟REACH认证。','洗护用品','上市准备','进行中',3,'2026-06-01',82),
+        ('益生菌儿童软糖系列','针对3-12岁儿童的益生菌软糖，含鼠李糖乳杆菌与动物双歧杆菌，改善肠道健康。','营养食品','市场洞察','进行中',3,'2027-03-01',20),
     ])
     # Stage gates for each project
     project_stages = [
-        # Project 1: 奶粉 - at 商业论证
-        (1, [('completed',95,'张三'),('completed',88,'张三'),('active',None,None),('pending',None,None),('pending',None,None),('pending',None,None)]),
-        # Project 2: 睡袋 - at 概念验证
-        (2, [('completed',90,'李四'),('active',None,None),('pending',None,None),('pending',None,None),('pending',None,None),('pending',None,None)]),
-        # Project 3: 湿巾 - at 上市准备
-        (3, [('completed',92,'李四'),('completed',85,'张三'),('completed',91,'张三'),('active',None,None),('pending',None,None),('pending',None,None)]),
-        # Project 4: 软糖 - at 市场洞察
-        (4, [('active',None,None),('pending',None,None),('pending',None,None),('pending',None,None),('pending',None,None),('pending',None,None)]),
+        # Project 1: 奶粉 - at 商业论证 (stages 1-2 passed, 3 in review)
+        (1, [('已通过',88,'李四'),('已通过',85,'张三'),('审核中',None,'管理员'),('待启动',None,None),('待启动',None,None),('待启动',None,None)]),
+        # Project 2: 睡袋 - at 概念验证 (stage 1 passed, 2 in review)
+        (2, [('已通过',82,'李四'),('审核中',None,'张三'),('待启动',None,None),('待启动',None,None),('待启动',None,None),('待启动',None,None)]),
+        # Project 3: 湿巾 - at 上市准备 (stages 1-3 passed, 4 in review)
+        (3, [('已通过',90,'李四'),('已通过',92,'张三'),('已通过',87,'管理员'),('审核中',None,'张三'),('待启动',None,None),('待启动',None,None)]),
+        # Project 4: 软糖 - at 市场洞察 (stage 1 in review)
+        (4, [('审核中',None,'李四'),('待启动',None,None),('待启动',None,None),('待启动',None,None),('待启动',None,None),('待启动',None,None)]),
     ]
     for pid, stages in project_stages:
         for i, (status, score, reviewer) in enumerate(stages):
-            review_date = '2025-03-15' if status == 'completed' else None
+            review_date = '2026-03-01' if status == '已通过' else None
             db.execute("INSERT INTO stage_gates(project_id,stage_name,stage_order,status,reviewer,review_date,score) VALUES(?,?,?,?,?,?,?)",
                        (pid, STAGES[i], i+1, status, reviewer, review_date, score))
     # Market insights
     db.executemany("INSERT INTO market_insights(project_id,title,insight_type,content,source,created_by) VALUES(?,?,?,?,?,?)", [
-        (1,'有机奶粉市场年增长25%','趋势分析','2024年中国有机婴幼儿奶粉市场规模达120亿元，同比增长25%，预计2025年将突破150亿元','艾瑞咨询2024母婴行业报告',3),
-        (1,'消费者更关注配方透明度','消费者研究','调研显示78%的妈妈在购买奶粉时最关注配方成分表，其次是品牌口碑(65%)和价格(52%)','内部消费者调研N=2000',3),
-        (2,'婴儿睡眠产品市场缺口','需求洞察','目前市场上缺乏真正智能化的婴儿睡眠产品，家长对恒温睡袋的需求未被满足','母婴社区用户分析',3),
-        (4,'益生菌品类年增长35%','趋势分析','儿童益生菌市场快速增长，软糖剂型接受度最高，家长偏好天然水果口味','天猫健康品类报告',3),
-        (4,'竞品分析：现有产品口感差','竞品分析','主要竞品益生菌产品以胶囊和粉剂为主，儿童接受度低，软糖形态有明显差异化优势','竞品调研报告',3),
-        (3,'天然成分湿巾需求增长','趋势分析','无添加、植物基婴儿湿巾需求增长40%，消费者愿意为天然成分支付20-30%溢价','京东母婴品类数据',3),
+        (1,'有机奶粉市场规模持续扩大','市场趋势','2025年中国有机婴幼儿奶粉市场规模达180亿元，同比增长22%。消费者对有机认证的关注度提升35%。','尼尔森IQ 2025母婴报告',3),
+        (1,'3段奶粉消费者偏好调研','消费者洞察','调研显示78%的妈妈关注DHA含量，65%重视益生元配方，52%愿意为有机认证支付溢价20-30%。','内部消费者调研（N=2000）',3),
+        (2,'智能母婴穿戴市场机会','市场趋势','全球智能婴儿监测设备市场预计2026年达45亿美元，中国市场占比18%，年增速超30%。','Grand View Research',3),
+        (2,'婴儿睡眠痛点分析','消费者洞察','82%的新手父母反馈夜间频繁查看宝宝冷暖是最大困扰。恒温睡袋概念测试好感度达87%。','焦点小组访谈（6组）',2),
+        (3,'婴儿湿巾品类消费升级','竞品分析','头部品牌纷纷推出"成分党"湿巾，主打零添加。市场均价从0.15元/片提升至0.28元/片。','魔镜市场情报',3),
+        (3,'电商渠道湿巾销售趋势','渠道洞察','抖音电商母婴湿巾GMV同比增长156%，内容种草转化率显著高于传统电商。','蝉妈妈数据',3),
+        (4,'儿童益生菌软糖消费趋势','市场趋势','儿童功能性零食市场年增长率28%，益生菌软糖品类渗透率仅12%，存在巨大增长空间。','艾瑞咨询',3),
+        (4,'竞品益生菌产品分析','竞品分析','目前市场主流产品以胶囊和粉剂为主，软糖剂型仅占8%。软糖形式儿童接受度高达93%。','内部竞品调研',3),
     ])
     # Business cases
     db.executemany("INSERT INTO business_cases(project_id,investment,expected_revenue,roi,payback_months,risk_level,conclusion) VALUES(?,?,?,?,?,?,?)", [
-        (1,350,1200,185,14,'中','投资回报率185%，14个月回本。有机奶粉市场持续增长，配方升级后竞争力显著提升，建议立即推进。'),
-        (3,180,650,210,10,'低','天然植物湿巾市场需求旺盛，投资回报率210%，10个月回本，风险较低。渠道铺货已启动。'),
+        (1,2500,8500,240,14,'中','有机奶粉3段升级项目投资回报率达240%，建议推进。需关注有机原料供应链稳定性与认证周期。'),
+        (3,800,3200,300,8,'低','天然植物湿巾项目风险可控，投资回收期短，渠道已就绪，建议加速上市。'),
     ])
     # Activities
     now = datetime.now()
     acts = [
-        (1,2,'通过评审','有机奶粉3段通过商业可行性评审，ROI预估达到185%', now - timedelta(hours=2)),
-        (2,3,'上传报告','智能睡袋消费者测试报告已上传，好评率92%', now - timedelta(hours=5)),
-        (3,3,'渠道进展','婴儿湿巾华东区渠道铺货完成78%，预计本周达标', now - timedelta(hours=20)),
-        (4,3,'完成洞察','儿童软糖市场洞察报告完成，发现益生菌品类年增长35%', now - timedelta(hours=30)),
-        (1,2,'PLM同步','PLM系统同步：有机奶粉3段配方定版完成，转入商业论证', now - timedelta(hours=48)),
-        (None,2,'知识库更新','知识库新增：《母婴品类2025渠道策略白皮书》已发布', now - timedelta(hours=72)),
+        (1,2,'更新项目','更新了商业论证阶段的财务预测模型', now - timedelta(hours=2)),
+        (1,3,'添加洞察','新增市场洞察：有机奶粉市场规模持续扩大', now - timedelta(hours=5)),
+        (2,2,'创建项目','创建了新项目：智能恒温婴儿睡袋', now - timedelta(days=1)),
+        (3,3,'阶段审核','商业论证阶段审核通过，评分95分', now - timedelta(days=2)),
+        (3,2,'更新项目','更新上市准备阶段：渠道铺货进度80%', now - timedelta(days=3)),
+        (4,3,'添加洞察','新增竞品分析：竞品益生菌产品分析', now - timedelta(days=4)),
+        (1,1,'阶段审核','概念验证阶段审核通过，评分85分', now - timedelta(days=5)),
+        (2,3,'添加洞察','新增市场趋势：智能母婴穿戴市场机会', now - timedelta(days=6)),
     ]
     for pid, uid, action, detail, ts in acts:
         db.execute("INSERT INTO activities(project_id,user_id,action,detail,created_at) VALUES(?,?,?,?,?)",
                    (pid, uid, action, detail, ts.strftime('%Y-%m-%d %H:%M:%S')))
     # Knowledge base
     db.executemany("INSERT INTO knowledge_base(title,category,content,author,usage_count) VALUES(?,?,?,?,?)", [
-        ('新品立项评估模板','方法论模板','包含市场分析、竞品对标、财务预测、风险评估四大板块的标准化立项评估模板','张三',236),
-        ('ROI测算工具','方法论模板','基于历史数据和市场预测的ROI自动测算模型，支持多场景模拟','张三',189),
-        ('上市复盘检查清单','方法论模板','涵盖产品、渠道、营销、供应链四个维度的上市复盘标准检查清单','李四',145),
-        ('GTM策略画布','方法论模板','Go-To-Market策略规划画布，包含目标用户、价值主张、渠道策略、定价策略','张三',167),
-        ('2024有机奶粉上市案例','历史案例','有机奶粉2段升级项目全流程复盘，成功经验和踩坑总结','张三',98),
-        ('婴儿湿巾市场进入策略','历史案例','天然婴儿湿巾品类从0到1的市场进入策略，含渠道选择和定价方案','李四',76),
-        ('母婴品类2025渠道策略白皮书','行业报告','覆盖线上电商、线下母婴店、医院渠道的全渠道策略分析','市场部',112),
-        ('消费者需求洞察方法论','最佳实践','母婴行业消费者需求挖掘的系统化方法论，含调研设计和分析框架','张三',88),
+        ('母婴新品Stage-Gate流程指南','流程规范','本指南定义了母婴新品从市场洞察到复盘优化的6个阶段门禁流程，每个阶段的交付物要求、评审标准和决策规则。','管理员',45),
+        ('消费者调研方法论','调研方法','涵盖定性（焦点小组、深度访谈）与定量（问卷调研、A/B测试）方法，附母婴品类专用调研模板与样本量计算器。','李四',38),
+        ('婴幼儿食品法规汇编','法规合规','汇总GB10765-2021、GB10767-2021等婴幼儿食品国标要求，以及有机产品认证流程与时间线。','张三',62),
+        ('商业论证模型模板','商业分析','标准化的NPD商业论证Excel模板，包含投资估算、收入预测、ROI计算、敏感性分析与风险评估矩阵。','管理员',55),
+        ('母婴品类电商运营手册','市场营销','覆盖天猫、京东、抖音、小红书四大平台的母婴品类运营策略，含内容种草、达人合作与促销节奏规划。','李四',33),
+        ('供应链质量管理SOP','质量管理','母婴产品供应链全流程质量管控标准操作流程，涵盖原料验收、生产监控、成品检验与追溯体系。','张三',41),
     ])
     db.commit()
 
@@ -239,22 +242,39 @@ def api_user():
 @login_required
 def api_dashboard_stats():
     total = query_db("SELECT COUNT(*) as c FROM projects", one=True)['c']
-    reviewing = query_db("SELECT COUNT(DISTINCT project_id) as c FROM stage_gates WHERE status='active'", one=True)['c']
-    knowledge = query_db("SELECT COUNT(*) as c FROM knowledge_base", one=True)['c']
+    active = query_db("SELECT COUNT(*) as c FROM projects WHERE status='进行中'", one=True)['c']
+    total_insights = query_db("SELECT COUNT(*) as c FROM market_insights", one=True)['c']
+    pending_reviews = query_db("SELECT COUNT(*) as c FROM stage_gates WHERE status='审核中'", one=True)['c']
+    avg_row = query_db("SELECT AVG(progress) as avg_p FROM projects WHERE status='进行中'", one=True)
+    avg_progress = round(avg_row['avg_p'] or 0, 1)
+    stage_counts = query_db("SELECT current_stage as stage, COUNT(*) as count FROM projects GROUP BY current_stage")
+    recent = query_db("""
+        SELECT a.*, u.real_name as user_name, p.name as project_name
+        FROM activities a LEFT JOIN users u ON a.user_id=u.id LEFT JOIN projects p ON a.project_id=p.id
+        ORDER BY a.created_at DESC LIMIT 10
+    """)
     return jsonify({
         'total_projects': total,
-        'success_rate': 78,
-        'reviewing': reviewing,
-        'knowledge_count': knowledge,
+        'active_projects': active,
+        'total_insights': total_insights,
+        'pending_reviews': pending_reviews,
+        'avg_progress': avg_progress,
+        'stage_counts': stage_counts,
+        'recent_activities': recent,
     })
 
 @app.route('/api/pipeline')
 @login_required
 def api_pipeline():
-    result = {}
+    result = []
     for stage in STAGES:
         count = query_db("SELECT COUNT(*) as c FROM projects WHERE current_stage=?", (stage,), one=True)['c']
-        result[stage] = count
+        projects_in_stage = query_db("SELECT id, name, progress, status FROM projects WHERE current_stage=?", (stage,))
+        result.append({
+            'stage': stage,
+            'count': count,
+            'projects': projects_in_stage,
+        })
     return jsonify(result)
 
 # ─── API: Projects ───
@@ -279,7 +299,7 @@ def api_create_project():
     )
     # Create stage gates
     for i, stage in enumerate(STAGES):
-        status = 'active' if i == 0 else 'pending'
+        status = '审核中' if i == 0 else '待启动'
         execute_db("INSERT INTO stage_gates(project_id,stage_name,stage_order,status) VALUES(?,?,?,?)", (pid, stage, i+1, status))
     execute_db("INSERT INTO activities(project_id,user_id,action,detail) VALUES(?,?,?,?)",
                (pid, session['user_id'], '创建项目', f'创建新项目：{data["name"]}'))
@@ -334,15 +354,15 @@ def api_update_stage(pid):
     data = request.get_json()
     stage_name = data['stage_name']
     execute_db("UPDATE stage_gates SET status=?, reviewer=?, review_date=?, comments=?, score=? WHERE project_id=? AND stage_name=?",
-               (data.get('status','active'), data.get('reviewer'), data.get('review_date'), data.get('comments'), data.get('score'), pid, stage_name))
+               (data.get('status','审核中'), data.get('reviewer'), data.get('review_date'), data.get('comments'), data.get('score'), pid, stage_name))
     # If completing a stage, activate next
-    if data.get('status') == 'completed':
+    if data.get('status') == '已通过':
         current_order = query_db("SELECT stage_order FROM stage_gates WHERE project_id=? AND stage_name=?", (pid, stage_name), one=True)
         if current_order:
             next_order = current_order['stage_order'] + 1
             next_stage = query_db("SELECT stage_name FROM stage_gates WHERE project_id=? AND stage_order=?", (pid, next_order), one=True)
             if next_stage:
-                execute_db("UPDATE stage_gates SET status='active' WHERE project_id=? AND stage_order=?", (pid, next_order))
+                execute_db("UPDATE stage_gates SET status='审核中' WHERE project_id=? AND stage_order=?", (pid, next_order))
                 execute_db("UPDATE projects SET current_stage=?, updated_at=datetime('now','localtime') WHERE id=?", (next_stage['stage_name'], pid))
         execute_db("INSERT INTO activities(project_id,user_id,action,detail) VALUES(?,?,?,?)",
                    (pid, session['user_id'], '通过评审', f'{stage_name}阶段评审通过'))
