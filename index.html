@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPMS - 母婴新品商业成功平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            color: #333;
+            background: #f5f7fa;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0 40px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo {
+            width: 36px;
+            height: 36px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .header-subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 2px;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .header-nav a {
+            color: rgba(255,255,255,0.85);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .header-nav a:hover {
+            color: white;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Layout */
+        .main-container {
+            margin-top: 64px;
+            display: flex;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background: white;
+            border-right: 1px solid #e8e8e8;
+            padding: 16px 0;
+            position: fixed;
+            top: 64px;
+            bottom: 0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 8px;
+        }
+
+        .sidebar-section-title {
+            padding: 8px 20px;
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 20px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            background: #f0f2ff;
+            color: #667eea;
+        }
+
+        .sidebar-item.active {
+            background: #f0f2ff;
+            color: #667eea;
+            border-left-color: #667eea;
+            font-weight: 500;
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        /* Content */
+        .content {
+            margin-left: 220px;
+            flex: 1;
+            padding: 24px;
+        }
+
+        /* Welcome Banner */
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 32px;
+            color: white;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+
+        .welcome-banner h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .welcome-banner p {
+            opacity: 0.9;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .stat-trend {
+            font-size: 12px;
+            margin-top: 6px;
+        }
+
+        .stat-trend.up {
+            color: #52c41a;
+        }
+
+        .stat-trend.down {
+            color: #f5222d;
+        }
+
+        /* Stage Gate Pipeline */
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+        }
+
+        .pipeline-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .pipeline {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            overflow-x: auto;
+            padding: 16px 0;
+        }
+
+        .stage {
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+            position: relative;
+        }
+
+        .stage-node {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 10px;
+            font-size: 22px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stage-node.completed {
+            background: linear-gradient(135deg, #52c41a, #73d13d);
+            color: white;
+        }
+
+        .stage-node.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3);
+            animation: pulse 2s infinite;
+        }
+
+        .stage-node.pending {
+            background: #f0f0f0;
+            color: #bbb;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.3); }
+            50% { box-shadow: 0 0 0 8px rgba(102, 126, 234, 0.1); }
+        }
+
+        .stage-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .stage-count {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .stage-connector {
+            flex: 0 0 40px;
+            height: 3px;
+            background: #e8e8e8;
+            position: relative;
+            top: -18px;
+        }
+
+        .stage-connector.completed {
+            background: linear-gradient(90deg, #52c41a, #73d13d);
+        }
+
+        .stage-connector.active {
+            background: linear-gradient(90deg, #52c41a, #667eea);
+        }
+
+        /* Two Column Layout */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .card-link {
+            font-size: 13px;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        /* Project List */
+        .project-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+        }
+
+        .project-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+
+        .project-info {
+            flex: 1;
+        }
+
+        .project-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .project-meta {
+            font-size: 12px;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .project-status {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-green {
+            background: #f6ffed;
+            color: #52c41a;
+        }
+
+        .status-blue {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+
+        .status-orange {
+            background: #fff7e6;
+            color: #fa8c16;
+        }
+
+        .status-purple {
+            background: #f9f0ff;
+            color: #722ed1;
+        }
+
+        /* Activity Timeline */
+        .timeline-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-text {
+            font-size: 13px;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .timeline-time {
+            font-size: 11px;
+            color: #bbb;
+            margin-top: 4px;
+        }
+
+        /* Module Cards Grid */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .module-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #667eea;
+        }
+
+        .module-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 14px;
+        }
+
+        .module-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .module-desc {
+            font-size: 13px;
+            color: #888;
+            line-height: 1.5;
+        }
+
+        /* PLM Sync Section */
+        .sync-banner {
+            background: white;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 4px solid #667eea;
+        }
+
+        .sync-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sync-icon {
+            font-size: 24px;
+        }
+
+        .sync-text h4 {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .sync-text p {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .sync-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #52c41a;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: #52c41a;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* Button */
+        .btn {
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 20px;
+        }
+
+        .tab-item {
+            padding: 10px 20px;
+            font-size: 14px;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .tab-item:hover {
+            color: #667eea;
+        }
+
+        .tab-item.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .module-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .content { margin-left: 0; }
+            .stats-row { grid-template-columns: 1fr; }
+            .two-col { grid-template-columns: 1fr; }
+            .module-grid { grid-template-columns: 1fr; }
+            .header-nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="header-left">
+        <div class="logo">&#9734;</div>
+        <div>
+            <div class="header-title">IPMS 新品商业成功平台</div>
+            <div class="header-subtitle">母婴新品从出生到上市的保驾护航</div>
+        </div>
+    </div>
+    <nav class="header-nav">
+        <a href="#dashboard">工作台</a>
+        <a href="#projects">项目管线</a>
+        <a href="#modules">功能模块</a>
+        <a href="#knowledge">知识库</a>
+        <a href="#reports">报表中心</a>
+    </nav>
+    <div class="header-right">
+        <span style="font-size:18px; cursor:pointer;">&#128276;</span>
+        <div class="user-avatar">&#128100;</div>
+    </div>
+</header>
+
+<!-- Main Layout -->
+<div class="main-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">工作台</div>
+            <a class="sidebar-item active">
+                <span class="sidebar-icon">&#127968;</span>
+                <span>首页概览</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128202;</span>
+                <span>数据看板</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128203;</span>
+                <span>待办事项</span>
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">阶段管理</div>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128269;</span>
+                <span>市场洞察</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128161;</span>
+                <span>概念验证</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128200;</span>
+                <span>商业论证</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#127919;</span>
+                <span>上市准备</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128640;</span>
+                <span>发布执行</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128209;</span>
+                <span>复盘优化</span>
+            </a>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-section-title">平台能力</div>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#9878;</span>
+                <span>阶段门径评审</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128218;</span>
+                <span>知识库</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#128279;</span>
+                <span>PLM 协同</span>
+            </a>
+            <a class="sidebar-item">
+                <span class="sidebar-icon">&#9881;</span>
+                <span>系统设置</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Content Area -->
+    <main class="content">
+
+        <!-- Welcome Banner -->
+        <div class="welcome-banner">
+            <h1>&#128075; 欢迎回来，产品经理</h1>
+            <p>当前有 <strong>12</strong> 个新品项目在管线中，<strong>3</strong> 个即将进入下一阶段门径评审。让我们确保每一个新品都走在成功的路上。</p>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-label">管线中项目</div>
+                <div class="stat-value">12</div>
+                <div class="stat-trend up">&#9650; 较上月 +3</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">本季度上市成功率</div>
+                <div class="stat-value">78%</div>
+                <div class="stat-trend up">&#9650; 较去年同期 +23%</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">待评审项目</div>
+                <div class="stat-value">3</div>
+                <div class="stat-trend" style="color:#fa8c16;">&#9679; 2个本周到期</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">知识库文档</div>
+                <div class="stat-value">156</div>
+                <div class="stat-trend up">&#9650; 本月新增 12 篇</div>
+            </div>
+        </div>
+
+        <!-- PLM Sync Banner -->
+        <div class="sync-banner">
+            <div class="sync-info">
+                <span class="sync-icon">&#128279;</span>
+                <div class="sync-text">
+                    <h4>PLM 研发管理平台 - 数据同步</h4>
+                    <p>双轨并行：研发进度实时同步至商业成功平台，确保信息一致性</p>
+                </div>
+            </div>
+            <div class="sync-status">
+                <span class="sync-dot"></span>
+                <span>同步正常 | 最近同步: 5分钟前</span>
+            </div>
+        </div>
+
+        <!-- Stage Gate Pipeline -->
+        <div class="pipeline-container">
+            <div class="card-header">
+                <div class="card-title">&#9878; 阶段门径（Stage-Gate）全局视图</div>
+                <a class="card-link" href="#">查看全部项目 &#8594;</a>
+            </div>
+            <div class="pipeline">
+                <div class="stage">
+                    <div class="stage-node completed">&#128269;</div>
+                    <div class="stage-name">市场洞察</div>
+                    <div class="stage-count">4 个项目</div>
+                </div>
+                <div class="stage-connector completed"></div>
+                <div class="stage">
+                    <div class="stage-node completed">&#128161;</div>
+                    <div class="stage-name">概念验证</div>
+                    <div class="stage-count">3 个项目</div>
+                </div>
+                <div class="stage-connector completed"></div>
+                <div class="stage">
+                    <div class="stage-node active">&#128200;</div>
+                    <div class="stage-name">商业论证</div>
+                    <div class="stage-count">2 个项目</div>
+                </div>
+                <div class="stage-connector active"></div>
+                <div class="stage">
+                    <div class="stage-node pending">&#127919;</div>
+                    <div class="stage-name">上市准备</div>
+                    <div class="stage-count">2 个项目</div>
+                </div>
+                <div class="stage-connector"></div>
+                <div class="stage">
+                    <div class="stage-node pending">&#128640;</div>
+                    <div class="stage-name">发布执行</div>
+                    <div class="stage-count">1 个项目</div>
+                </div>
+                <div class="stage-connector"></div>
+                <div class="stage">
+                    <div class="stage-node pending">&#128209;</div>
+                    <div class="stage-name">复盘优化</div>
+                    <div class="stage-count">0 个项目</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Module Cards -->
+        <h2 class="section-title">&#127775; 核心功能模块</h2>
+        <div class="module-grid">
+            <a class="module-card" href="#">
+                <div class="module-icon" style="background:#e6f7ff;">&#128269;</div>
+                <div class="module-name">市场洞察 & 消费者研究</div>
+                <div class="module-desc">母婴市场趋势分析、消费者画像、竞品监测、需求挖掘，找准机会点</div>
+            </a>
+            <a class="module-card" href="#">
+                <div class="module-icon" style="background:#f6ffed;">&#128161;</div>
+                <div class="module-name">产品概念验证</div>
+                <div class="module-desc">概念筛选评分、目标用户测试、概念优化迭代，早期过滤不可行方案</div>
+            </a>
+            <a class="module-card" href="#">
+                <div class="module-icon" style="background:#fff7e6;">&#128200;</div>
+                <div class="module-name">商业可行性分析</div>
+                <div class="module-desc">财务建模、ROI测算、盈亏平衡分析、投资回报预测，算清楚账</div>
+            </a>
+            <a class="module-card" href="#">
+                <div class="module-icon" style="background:#f9f0ff;">&#127919;</div>
+                <div class="module-name">Go-To-Market 上市计划</div>
+                <div class="module-desc">渠道策略、定价方案、营销规划、铺货计划，一盘棋协同作战</div>
+            </a>
+            <a class="module-card" href="#">
+                <div class="module-icon" style="background:#fff1f0;">&#128640;</div>
+                <div class="module-name">上市执行追踪</div>
+                <div class="module-desc">里程碑管理、任务分解、进度追踪、风险预警，确保落地不走样</div>
+            </a>
+            <a class="module-card" href="#">
+                <div class="module-icon" style="background:#e6fffb;">&#128209;</div>
+                <div class="module-name">上市后评估 & 复盘</div>
+                <div class="module-desc">销售追踪、目标达成分析、经验沉淀、方法论优化，持续迭代提升</div>
+            </a>
+        </div>
+
+        <!-- Two Column: Projects + Timeline -->
+        <div class="two-col">
+            <!-- Active Projects -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">&#128640; 重点项目跟踪</div>
+                    <a class="card-link" href="#">全部项目 &#8594;</a>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-avatar" style="background:#e6f7ff;">&#127868;</div>
+                    <div class="project-info">
+                        <div class="project-name">有机婴幼儿奶粉 3 段升级</div>
+                        <div class="project-meta">商业论证阶段 · 预计Q2上市</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:65%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-blue">论证中</span>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-avatar" style="background:#f6ffed;">&#128700;</div>
+                    <div class="project-info">
+                        <div class="project-name">智能恒温婴儿睡袋</div>
+                        <div class="project-meta">概念验证阶段 · 用户测试进行中</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:40%; background: linear-gradient(90deg, #52c41a, #73d13d);"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-green">验证中</span>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-avatar" style="background:#fff7e6;">&#129466;</div>
+                    <div class="project-info">
+                        <div class="project-name">天然植物婴儿湿巾</div>
+                        <div class="project-meta">上市准备阶段 · 渠道铺货中</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:82%; background: linear-gradient(90deg, #fa8c16, #ffc53d);"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-orange">铺货中</span>
+                </div>
+
+                <div class="project-item">
+                    <div class="project-avatar" style="background:#f9f0ff;">&#127880;</div>
+                    <div class="project-info">
+                        <div class="project-name">益生菌儿童软糖系列</div>
+                        <div class="project-meta">市场洞察阶段 · 趋势研究中</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width:20%; background: linear-gradient(90deg, #722ed1, #b37feb);"></div>
+                        </div>
+                    </div>
+                    <span class="project-status status-purple">洞察中</span>
+                </div>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">&#128197; 最近动态</div>
+                    <a class="card-link" href="#">全部动态 &#8594;</a>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background:#52c41a;"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-text"><strong>有机奶粉3段</strong> 通过商业可行性评审，ROI预估达到 <strong>185%</strong></div>
+                        <div class="timeline-time">今天 14:30</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background:#1890ff;"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-text"><strong>智能睡袋</strong> 消费者测试报告已上传，好评率 <strong>92%</strong></div>
+                        <div class="timeline-time">今天 11:20</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background:#fa8c16;"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-text"><strong>婴儿湿巾</strong> 华东区渠道铺货完成 <strong>78%</strong>，预计本周达标</div>
+                        <div class="timeline-time">昨天 16:45</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background:#722ed1;"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-text"><strong>儿童软糖</strong> 市场洞察报告完成，发现益生菌品类年增长 <strong>35%</strong></div>
+                        <div class="timeline-time">昨天 10:00</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background:#667eea;"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-text">PLM 系统同步：<strong>有机奶粉3段</strong> 配方定版完成，转入商业论证</div>
+                        <div class="timeline-time">前天 09:15</div>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-dot" style="background:#52c41a;"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-text">知识库新增：《母婴品类2025渠道策略白皮书》已发布</div>
+                        <div class="timeline-time">3天前</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Knowledge Base Preview -->
+        <div class="card" style="margin-bottom: 24px;">
+            <div class="card-header">
+                <div class="card-title">&#128218; 方法论知识库</div>
+                <a class="card-link" href="#">进入知识库 &#8594;</a>
+            </div>
+            <div class="tab-nav">
+                <div class="tab-item active">方法论模板</div>
+                <div class="tab-item">历史案例</div>
+                <div class="tab-item">行业报告</div>
+                <div class="tab-item">最佳实践</div>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                <div style="padding: 16px; background: #f9f9ff; border-radius: 8px; cursor: pointer;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#128203;</div>
+                    <div style="font-size: 13px; font-weight: 600;">新品立项评估模板</div>
+                    <div style="font-size: 11px; color: #999; margin-top: 4px;">使用 236 次</div>
+                </div>
+                <div style="padding: 16px; background: #f9fff9; border-radius: 8px; cursor: pointer;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#128202;</div>
+                    <div style="font-size: 13px; font-weight: 600;">ROI 测算工具</div>
+                    <div style="font-size: 11px; color: #999; margin-top: 4px;">使用 189 次</div>
+                </div>
+                <div style="padding: 16px; background: #fff9f0; border-radius: 8px; cursor: pointer;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#128209;</div>
+                    <div style="font-size: 13px; font-weight: 600;">上市复盘检查清单</div>
+                    <div style="font-size: 11px; color: #999; margin-top: 4px;">使用 145 次</div>
+                </div>
+                <div style="padding: 16px; background: #f0f9ff; border-radius: 8px; cursor: pointer;">
+                    <div style="font-size: 24px; margin-bottom: 8px;">&#127919;</div>
+                    <div style="font-size: 13px; font-weight: 600;">GTM 策略画布</div>
+                    <div style="font-size: 11px; color: #999; margin-top: 4px;">使用 167 次</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div style="text-align: center; padding: 20px; color: #ccc; font-size: 12px;">
+            IPMS 新品商业成功平台 v1.0 &copy; 2025 | 双轨驱动：PLM (研发管理) + IPMS (商业成功)
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>
